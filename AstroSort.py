@@ -37,9 +37,6 @@ class MainWindow(QtWidgets.QWidget):
             hbox.addWidget(widget2)
             hbox.addWidget(widget3)
             layout.addLayout(hbox)
-            
-        def ping():
-            print("pong")
 
         self.thread_manager = QThreadPool()
         
@@ -97,7 +94,6 @@ class MainWindow(QtWidgets.QWidget):
         layout_left.addWidget(self.button_start)
         layout_left.addStretch()
         add_horizontal_widgets(layout_left, self.progress_bar, self.button_cancel)
-
         
         # -- Begin right side layout --
         # Search Layout named Widgets
@@ -132,12 +128,8 @@ class MainWindow(QtWidgets.QWidget):
         layout_right.addWidget(self.list_bias)
         
         layout_right.addStretch()
-
-        
-        
         
 # -- Start of functions ---
-
 def querySimbad():
     window.combo_box_query.clear()
     queryString = window.line_simbad_query.text()
@@ -288,7 +280,6 @@ def copy_and_rename():
             logging.info("Copy started: " + str(source) + " ----> " + str(destination))
             shutil.copy(source, destination)
             
-            
         for file in dark_files:
             if canceled: return None
             current_file += 1
@@ -332,11 +323,9 @@ def copy_and_rename():
 def startProcess(self):
     window.thread_manager.start(copy_and_rename)
     logging.info("Starting rename and copy process.")
-    
 
 if __name__ == "__main__":    
     app = QtWidgets.QApplication([])
-
     window = MainWindow()
     window.resize(1200, 600)
     
