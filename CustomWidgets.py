@@ -1,6 +1,8 @@
-from PySide6 import QtWidgets
-import pathlib
+from PySide6 import QtWidgets, QtCore
 from global_vars import *
+
+import logging
+import pathlib
 
 class DropList(QtWidgets.QListWidget):
     def __init__(self, parent=None, *args, **kwargs):

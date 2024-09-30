@@ -1,16 +1,15 @@
 import sys
-from astroquery.simbad import Simbad
 import pathlib
 import shutil
 import datetime
 import logging
-from time import sleep
 
+from astroquery.simbad import Simbad
+from time import sleep
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QFileDialog
 from PySide6.QtCore import QDateTime, QThreadPool, Slot
-from DropListWidget import DropList
-
+from CustomWidgets import DropList, QTextEditLogger
 from global_vars import *
 
 output_path = None
@@ -335,13 +334,13 @@ def startProcess(self):
     logging.info("Starting rename and copy process.")
     
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    
+if __name__ == "__main__":    
     app = QtWidgets.QApplication([])
 
     window = MainWindow()
     window.resize(1200, 600)
+    
+    logging.basicConfig(level=logging.INFO)
     
     window.button_query.clicked.connect(querySimbad)
     window.line_simbad_query.returnPressed.connect(querySimbad)
