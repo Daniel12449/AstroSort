@@ -9,7 +9,7 @@ from time import sleep
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QFileDialog
 from PySide6.QtCore import QDateTime, QThreadPool, Slot
-from CustomWidgets import DropList, QTextEditLogger
+from CustomWidgets import DropList
 from global_vars import *
 
 output_path = None
