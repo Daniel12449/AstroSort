@@ -19,10 +19,10 @@
 
 ## The new file structure is as follows:
 ```
-output_path/object-name/date_camera_focal-length/LIGHTS/L_camera_focal-length_image-name.extension
-                                                /DARKS/D_camera_focal-length_image-name.extension
-                                                /FLATS/F_camera_focal-length_image-name.extension
-                                                /BIAS/b_camera_focal-length_image-name.extension
+output_path/object-name/date_camera_focal-length/LIGHTS/L_camera_focal-length_image-name.ext
+                                                /DARKS/D_camera_focal-length_image-name.ext
+                                                /FLATS/F_camera_focal-length_image-name.ext
+                                                /BIAS/b_camera_focal-length_image-name.ext
 ```
 ### Example:
 ```
