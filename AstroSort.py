@@ -3,6 +3,7 @@ from astroquery.simbad import Simbad
 import pathlib
 import shutil
 import datetime
+import logging
 from time import sleep
 
 from PySide6 import QtWidgets
@@ -146,7 +147,6 @@ def querySimbad():
     simbad.ROW_LIMIT = 10
     
     if queryString != "":
-        
         try:
             simbad_results = simbad.query_region(queryString)
             for i in range(len(simbad_results)):
@@ -157,12 +157,14 @@ def querySimbad():
                 window.combo_box_query.addItem(name, coordinates)
         except: 
             QtWidgets.QMessageBox.about(None, "Simbad Search", "Simbad was unable to find an object")
+            logging.warning("Simbad was unable to find a matching object.")
                     
 def updateCoordinates():
     global object_name
     window.label_ra_coordinates.setText(window.combo_box_query.currentData()[0])
     window.label_dec_coordinates.setText(window.combo_box_query.currentData()[1])
     object_name = window.combo_box_query.currentData()[2].replace(" ", "")
+    logging.info("Object set to " + object_name + " with coordinates: RA " + window.combo_box_query.currentData()[0] + " and DEC " + window.combo_box_query.currentData()[1])
     
 def openFiles(target):
     file_list = QFileDialog.getOpenFileNames()[0]
@@ -172,37 +174,45 @@ def openFiles(target):
         for path in path_list:
             light_files.append(path)
             window.list_lights.addItem(path.name)
+            logging.info("Light file added: " + str(path))
     elif target == 'darks':
         for path in path_list:
             dark_files.append(path)
             window.list_darks.addItem(path.name)
+            logging.info("Dark file added: " + str(path))
     elif target == 'flats':
         for path in path_list:
             flat_files.append(path)
             window.list_flats.addItem(path.name)
+            logging.info("Flat file added: " + str(path))
     elif target == 'bias':
         for path in path_list:
             bias_files.append(path)
             window.list_bias.addItem(path.name)
+            logging.info("Bias file added: " + str(path))
             
 def removeFiles(target):
     if target == 'lights':
         row = window.list_lights.currentRow()
+        logging.info("Removing light file: " + str(light_files[row]))
         light_files.pop(row)
         window.list_lights.takeItem(row)
         
     elif target == 'darks':
         row = window.list_darks.currentRow()
+        logging.info("Removing dark file: " + str(light_files[row]))
         dark_files.pop(row)
         window.list_darks.takeItem(row)
         
     elif target == 'flats':
         row = window.list_flats.currentRow()
+        logging.info("Removing flat file: " + str(light_files[row]))
         flat_files.pop(row)
         window.list_flats.takeItem(row)
         
     elif target == 'bias':
         row = window.list_lights.currentRow()
+        logging.info("Removing bias file: " + str(light_files[row]))
         light_files.pop(row)
         window.list_lights.takeItem(row)
         
@@ -211,25 +221,33 @@ def updateOutputPath():
     outputPath = QFileDialog.getExistingDirectory()
     window.line_output_path.setText(outputPath)
     output_path = pathlib.Path(outputPath)
+    logging.info("Output path set to: " + str(output_path))
     
 def updateCamera():
     global camera
     camera = window.line_camera.text()
+    logging.info("Camera set to: " + camera)
     
 def updateFocalLength():
     global focal_length
     focal_length = window.line_focal_length.text()
+    logging.info("Focal length set to: " + focal_length)
     
 def updateDate():
     if light_files != []:
         first_file = light_files[0]
         date = datetime.datetime.fromtimestamp(first_file.stat().st_mtime, tz=datetime.timezone.utc)
         window.date.setDate(date)
+        logging.info("Date set to: " + str(date))
         
 def setCancel():
     global canceled
-    canceled = True
-    print("Cancel")
+    if canceled == False:
+        canceled = True
+        logging.warning("Process canceled!")
+    elif canceled == True:
+        canceled = False
+        logging.info("Process reset.")
     
 @Slot()
 def copy_and_rename():
@@ -237,16 +255,20 @@ def copy_and_rename():
     
     if object_name == None or output_path == None:
         QtWidgets.QMessageBox.about(None, "Error", "Please select an object and output path first.")
+        logging.error("Object and/or output path not set!")
     
     if camera == None:
         QtWidgets.QMessageBox.about(None, "Error", "Please enter a camera first.")
+        logging.error("Camera name not set!")
         
     if focal_length == None:
         QtWidgets.QMessageBox.about(None, "Error", "Please enter the focal length first.")
+        logging.error("Focal length not set!")
         
     else:
         date = str(window.date.date().day()) + "-" + str(window.date.date().month()) + "-" + str(window.date.date().year())
         output_path_final = output_path / pathlib.Path(object_name) / pathlib.Path(date + "_" + camera + "_" + focal_length)
+        logging.info("Base output path set to: " + str(output_path_final))
         
         # Progress Bar
         total_files = len(light_files) + len(dark_files) + len(flat_files) + len(bias_files)
@@ -264,9 +286,9 @@ def copy_and_rename():
             filename = "L_" + camera + "_" + focal_length + "_" + file.name
             destination = destination_path / pathlib.Path(filename)
             
+            logging.info("Copy started: " + str(source) + " ----> " + str(destination))
             shutil.copy(source, destination)
             
-            print(str(source) + " ----> " + str(destination))
             
         for file in dark_files:
             if canceled: return None
@@ -278,9 +300,8 @@ def copy_and_rename():
             filename = "D_" + camera + "_" + focal_length + "_" + file.name
             destination = destination_path / pathlib.Path(filename)
             
+            logging.info("Copy started: " + str(source) + " ----> " + str(destination))
             shutil.copy(source, destination)
-            
-            print(str(source) + " ----> " + str(destination))
             
         for file in flat_files:
             if canceled: return None
@@ -292,10 +313,9 @@ def copy_and_rename():
             filename = "F_" + camera + "_" + focal_length + "_" + file.name
             destination = destination_path / pathlib.Path(filename)
             
+            logging.info("Copy started: " + str(source) + " ----> " + str(destination))
             shutil.copy(source, destination)
-            
-            print(str(source) + " ----> " + str(destination))
-            
+
         for file in bias_files:
             if canceled: return None
             current_file += 1
@@ -306,16 +326,18 @@ def copy_and_rename():
             filename = "B_" + camera + "_" + focal_length + "_" + file.name
             destination = destination_path / pathlib.Path(filename)
             
+            logging.info("Copy started: " + str(source) + " ----> " + str(destination))
             shutil.copy(source, destination)
-            
-            print(str(source) + " ----> " + str(destination))
 
 @Slot()      
 def startProcess(self):
     window.thread_manager.start(copy_and_rename)
+    logging.info("Starting rename and copy process.")
     
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    
     app = QtWidgets.QApplication([])
 
     window = MainWindow()
