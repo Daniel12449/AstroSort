@@ -44,15 +44,13 @@ class MainWindow(QtWidgets.QWidget):
         self.thread_manager = QThreadPool()
         
         main_layout = QtWidgets.QHBoxLayout()
-        layout_left = QtWidgets.QHBoxLayout()
         layout_right = QtWidgets.QVBoxLayout()
-        search_layout = QtWidgets.QVBoxLayout()
+        layout_left = QtWidgets.QVBoxLayout()
         
         self.setLayout(main_layout)
         
         # Left side Sublayouts
         main_layout.addLayout(layout_left)
-        layout_left.addLayout(search_layout)
         
         # Right side Sublayouts
         main_layout.addLayout(layout_right)
@@ -76,29 +74,29 @@ class MainWindow(QtWidgets.QWidget):
         
         # Left side Layout
         # Search Layout 
-        search_layout.addStretch()
-        search_layout.addWidget(QtWidgets.QLabel("Search for Object"))
-        add_horizontal_widgets(search_layout, self.line_simbad_query, self.button_query)
-        search_layout.addWidget(self.combo_box_query)
+        layout_left.addStretch()
+        layout_left.addWidget(QtWidgets.QLabel("Search for Object"))
+        add_horizontal_widgets(layout_left, self.line_simbad_query, self.button_query)
+        layout_left.addWidget(self.combo_box_query)
         
         hbox_astromeric_solution = QtWidgets.QHBoxLayout()
         add_horizontal_widgets(hbox_astromeric_solution, QtWidgets.QLabel("RA: "),  self.label_ra_coordinates)
         add_horizontal_widgets(hbox_astromeric_solution, QtWidgets.QLabel("DEC: "), self.label_dec_coordinates)
-        search_layout.addLayout(hbox_astromeric_solution)
+        layout_left.addLayout(hbox_astromeric_solution)
         
         # Spacer
-        search_layout.addWidget(QtWidgets.QLabel(""))
+        layout_left.addWidget(QtWidgets.QLabel(""))
         
         # Input fields
-        add_horizontal_widgets(search_layout, QtWidgets.QLabel("Camera: "), self.line_camera)
-        add_horizontal_widgets(search_layout, QtWidgets.QLabel("Focal Length: "), self.line_focal_length)
-        add_horizontal_widgets(search_layout, QtWidgets.QLabel("Date: "), self.date)
-        search_layout.addStretch()
-        search_layout.addWidget(QtWidgets.QLabel("Output Path"))
-        add_horizontal_widgets(search_layout, self.line_output_path, self.button_output_path)
-        search_layout.addWidget(self.button_start)
-        search_layout.addStretch()
-        add_horizontal_widgets(search_layout, self.progress_bar, self.button_cancel)
+        add_horizontal_widgets(layout_left, QtWidgets.QLabel("Camera: "), self.line_camera)
+        add_horizontal_widgets(layout_left, QtWidgets.QLabel("Focal Length: "), self.line_focal_length)
+        add_horizontal_widgets(layout_left, QtWidgets.QLabel("Date: "), self.date)
+        layout_left.addStretch()
+        layout_left.addWidget(QtWidgets.QLabel("Output Path"))
+        add_horizontal_widgets(layout_left, self.line_output_path, self.button_output_path)
+        layout_left.addWidget(self.button_start)
+        layout_left.addStretch()
+        add_horizontal_widgets(layout_left, self.progress_bar, self.button_cancel)
 
         
         # -- Begin right side layout --
