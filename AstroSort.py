@@ -14,6 +14,7 @@ from global_vars import *
 
 output_path = None
 object_name = None
+category = "Deep Sky Objects"
 camera = None
 focal_length = None
 location = None
@@ -169,8 +170,22 @@ class MainWindow(QtWidgets.QWidget):
         layout_right.addStretch()
             
     def displayStack(self, i):
-        logging.info("Changed Stack widget to index " + str(i))
+        global category
+
         self.stackedWidget.setCurrentIndex(i)
+        
+        if i == 1:
+            category = "Deep Sky Objects"
+        elif i == 2:
+            category = "Solar System"
+        elif i == 3:
+            category = "Comets"
+        elif i == 4:
+            category = "Constellations"
+            
+        logging.info("Set category to: " + category)
+        logging.info("Changed Stack widget to index " + str(i))
+            
         
 # -- Start of functions ---
 def querySimbad():
