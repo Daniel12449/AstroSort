@@ -57,7 +57,7 @@ class MainWindow(QtWidgets.QWidget):
         # -- Begin left side layout --
         # Search Layout named Widgets
         self.combo_box_category = QtWidgets.QComboBox()
-        self.combo_box_category.addItems(['Deep Sky', 'Solar System', 'Comets', 'Constellations'])
+        self.combo_box_category.addItems(['Deep Sky Objects', 'Solar System', 'Comets', 'Constellations'])
         self.button_query = QtWidgets.QPushButton("Search")
         self.line_simbad_query = QtWidgets.QLineEdit(placeholderText="Enter Object")
         self.label_ra_coordinates = QtWidgets.QLabel()
@@ -294,6 +294,11 @@ def updateFocalLength():
     focal_length = window.line_focal_length.text()
     logging.info("Focal length set to: " + focal_length)
     
+def updateLocation():
+    global location
+    location = window.line_location.text()
+    logging.info("Location set to: " + location)
+    
 def updateDate():
     if light_files != []:
         first_file = light_files[0]
@@ -312,7 +317,7 @@ def setCancel():
     
 @Slot()
 def copy_and_rename():
-    global object_name, output_path, camera, focal_length, canceled
+    global object_name, output_path, camera, focal_length, canceled, category, location
     
     if object_name == None or output_path == None:
         QtWidgets.QMessageBox.about(None, "Error", "Please select an object and output path first.")
@@ -326,9 +331,13 @@ def copy_and_rename():
         QtWidgets.QMessageBox.about(None, "Error", "Please enter the focal length first.")
         logging.error("Focal length not set!")
         
+    if location == None:
+        QtWidgets.QMessageBox.about(None, "Error", "Please enter a location first.")
+        logging.error("Location not set!")
+        
     else:
         date = str(window.date.date().day()) + "-" + str(window.date.date().month()) + "-" + str(window.date.date().year())
-        output_path_final = output_path / pathlib.Path(object_name) / pathlib.Path(date + "_" + camera + "_" + focal_length)
+        output_path_final = output_path / pathlib.Path(category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
         logging.info("Base output path set to: " + str(output_path_final))
         
         # Progress Bar
@@ -411,6 +420,7 @@ if __name__ == "__main__":
     window.combo_box_query.currentIndexChanged.connect(updateCoordinates)
     window.line_camera.editingFinished.connect(updateCamera)
     window.line_focal_length.editingFinished.connect(updateFocalLength)
+    window.line_location.editingFinished.connect(updateLocation)
     
     window.button_add_lights.clicked.connect(lambda: openFiles('lights'))
     window.button_add_darks.clicked.connect(lambda: openFiles('darks'))
