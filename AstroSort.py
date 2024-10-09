@@ -16,6 +16,7 @@ output_path = None
 object_name = None
 camera = None
 focal_length = None
+location = None
 canceled = False
 
 class MainWindow(QtWidgets.QWidget):
@@ -60,7 +61,9 @@ class MainWindow(QtWidgets.QWidget):
         self.line_simbad_query = QtWidgets.QLineEdit(placeholderText="Enter Object")
         self.label_ra_coordinates = QtWidgets.QLabel()
         self.label_dec_coordinates = QtWidgets.QLabel()
-        self.line_object_name = QtWidgets.QLineEdit()
+        self.line_object_name1 = QtWidgets.QLineEdit()
+        self.line_object_name2 = QtWidgets.QLineEdit()
+        self.line_object_name3 = QtWidgets.QLineEdit()
         self.line_camera = QtWidgets.QLineEdit()
         self.line_focal_length = QtWidgets.QLineEdit()
         self.line_location = QtWidgets.QLineEdit()
@@ -76,21 +79,47 @@ class MainWindow(QtWidgets.QWidget):
         # Left side Layout
         layout_left.addStretch()
         add_horizontal_widgets(layout_left, QtWidgets.QLabel("Choose category:"),  self.combo_box_category)
-        layout_left.addStretch()
+        #layout_left.addStretch()
         
-        # Search layout 
+        # Stack definition
+        self.stackedWidget = QtWidgets.QStackedWidget()
+        
+        # Search Widget
+        self.searchLayout = QtWidgets.QWidget()
         hbox_astromeric_solution = QtWidgets.QVBoxLayout()
         hbox_astromeric_solution.addWidget(QtWidgets.QLabel("Search for Object"))
         add_horizontal_widgets(hbox_astromeric_solution, self.line_simbad_query, self.button_query)
         hbox_astromeric_solution.addWidget(self.combo_box_query)
         add_horizontal_widgets(hbox_astromeric_solution, QtWidgets.QLabel("RA: "),  self.label_ra_coordinates)
         add_horizontal_widgets(hbox_astromeric_solution, QtWidgets.QLabel("DEC: "), self.label_dec_coordinates)
-        layout_left.addLayout(hbox_astromeric_solution)
+        self.searchLayout.setLayout(hbox_astromeric_solution)
         
-        # Manual entry layout
-        hbox_manual_entry = QtWidgets.QHBoxLayout()
-        add_horizontal_widgets(hbox_manual_entry, QtWidgets.QLabel("Enter Object:"),  self.line_object_name)
+        # Manual entry widget 1
+        self.manualEntryStack1 = QtWidgets.QWidget()
+        hbox_manual_entry1 = QtWidgets.QHBoxLayout()
+        add_horizontal_widgets(hbox_manual_entry1, QtWidgets.QLabel("Enter solar system object:"),  self.line_object_name1)
+        self.manualEntryStack1.setLayout(hbox_manual_entry1)
         
+        # Manual entry widget 2
+        self.manualEntryStack2 = QtWidgets.QWidget()
+        hbox_manual_entry2 = QtWidgets.QHBoxLayout()
+        add_horizontal_widgets(hbox_manual_entry2, QtWidgets.QLabel("Enter comet name:"),  self.line_object_name2)
+        self.manualEntryStack2.setLayout(hbox_manual_entry2)
+        
+        # Manual entry widget 3
+        self.manualEntryStack3 = QtWidgets.QWidget()
+        hbox_manual_entry3 = QtWidgets.QHBoxLayout()
+        add_horizontal_widgets(hbox_manual_entry3, QtWidgets.QLabel("Enter constellation:"),  self.line_object_name3)
+        self.manualEntryStack3.setLayout(hbox_manual_entry3)
+     
+        
+        # Adding Widgets to stack
+        self.stackedWidget.addWidget(self.searchLayout)
+        self.stackedWidget.addWidget(self.manualEntryStack1)
+        self.stackedWidget.addWidget(self.manualEntryStack2) 
+        self.stackedWidget.addWidget(self.manualEntryStack3)     
+        layout_left.addWidget(self.stackedWidget)    
+
         # Spacer
         layout_left.addWidget(QtWidgets.QLabel(""))
         
@@ -139,6 +168,10 @@ class MainWindow(QtWidgets.QWidget):
         layout_right.addWidget(self.list_bias)
         
         layout_right.addStretch()
+            
+    def displayStack(self, i):
+        logging.info("Changed Stack widget to index " + str(i))
+        self.stackedWidget.setCurrentIndex(i)
         
 # -- Start of functions ---
 def querySimbad():
@@ -341,6 +374,8 @@ if __name__ == "__main__":
     window.resize(1200, 600)
     
     logging.basicConfig(level=logging.INFO)
+    
+    window.combo_box_category.currentIndexChanged.connect(window.displayStack)
     
     window.button_query.clicked.connect(querySimbad)
     window.line_simbad_query.returnPressed.connect(querySimbad)
