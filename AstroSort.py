@@ -79,7 +79,6 @@ class MainWindow(QtWidgets.QWidget):
         # Left side Layout
         layout_left.addStretch()
         add_horizontal_widgets(layout_left, QtWidgets.QLabel("Choose category:"),  self.combo_box_category)
-        #layout_left.addStretch()
         
         # Stack definition
         self.stackedWidget = QtWidgets.QStackedWidget()
@@ -200,6 +199,18 @@ def updateCoordinates():
     window.label_dec_coordinates.setText(window.combo_box_query.currentData()[1])
     object_name = window.combo_box_query.currentData()[2].replace(" ", "")
     logging.info("Object set to " + object_name + " with coordinates: RA " + window.combo_box_query.currentData()[0] + " and DEC " + window.combo_box_query.currentData()[1])
+    
+def updateObjectName(source):
+    global object_name
+    
+    if source == 1:
+        object_name = window.line_object_name1.text()
+    elif source == 2:
+        object_name = window.line_object_name2.text()
+    elif source == 3:
+        object_name = window.line_object_name3.text()
+        
+    logging.info("Object name set to: " + object_name)
     
 def openFiles(target):
     file_list = QFileDialog.getOpenFileNames()[0]
@@ -376,6 +387,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     window.combo_box_category.currentIndexChanged.connect(window.displayStack)
+    window.line_object_name1.editingFinished.connect(lambda: updateObjectName(1))
+    window.line_object_name2.editingFinished.connect(lambda: updateObjectName(2))
+    window.line_object_name3.editingFinished.connect(lambda: updateObjectName(3))
     
     window.button_query.clicked.connect(querySimbad)
     window.line_simbad_query.returnPressed.connect(querySimbad)
