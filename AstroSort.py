@@ -54,12 +54,16 @@ class MainWindow(QtWidgets.QWidget):
         
         # -- Begin left side layout --
         # Search Layout named Widgets
+        self.combo_box_category = QtWidgets.QComboBox()
+        self.combo_box_category.addItems(['Deep Sky', 'Solar System', 'Comets', 'Constellations'])
         self.button_query = QtWidgets.QPushButton("Search")
         self.line_simbad_query = QtWidgets.QLineEdit(placeholderText="Enter Object")
         self.label_ra_coordinates = QtWidgets.QLabel()
         self.label_dec_coordinates = QtWidgets.QLabel()
+        self.line_object_name = QtWidgets.QLineEdit()
         self.line_camera = QtWidgets.QLineEdit()
         self.line_focal_length = QtWidgets.QLineEdit()
+        self.line_location = QtWidgets.QLineEdit()
         self.combo_box_query = QtWidgets.QComboBox()
         self.line_output_path = QtWidgets.QLineEdit()
         self.button_output_path = QtWidgets.QPushButton("...")
@@ -70,16 +74,22 @@ class MainWindow(QtWidgets.QWidget):
         self.button_cancel = QtWidgets.QPushButton("Cancel")
         
         # Left side Layout
-        # Search Layout 
         layout_left.addStretch()
-        layout_left.addWidget(QtWidgets.QLabel("Search for Object"))
-        add_horizontal_widgets(layout_left, self.line_simbad_query, self.button_query)
-        layout_left.addWidget(self.combo_box_query)
+        add_horizontal_widgets(layout_left, QtWidgets.QLabel("Choose category:"),  self.combo_box_category)
+        layout_left.addStretch()
         
-        hbox_astromeric_solution = QtWidgets.QHBoxLayout()
+        # Search layout 
+        hbox_astromeric_solution = QtWidgets.QVBoxLayout()
+        hbox_astromeric_solution.addWidget(QtWidgets.QLabel("Search for Object"))
+        add_horizontal_widgets(hbox_astromeric_solution, self.line_simbad_query, self.button_query)
+        hbox_astromeric_solution.addWidget(self.combo_box_query)
         add_horizontal_widgets(hbox_astromeric_solution, QtWidgets.QLabel("RA: "),  self.label_ra_coordinates)
         add_horizontal_widgets(hbox_astromeric_solution, QtWidgets.QLabel("DEC: "), self.label_dec_coordinates)
         layout_left.addLayout(hbox_astromeric_solution)
+        
+        # Manual entry layout
+        hbox_manual_entry = QtWidgets.QHBoxLayout()
+        add_horizontal_widgets(hbox_manual_entry, QtWidgets.QLabel("Enter Object:"),  self.line_object_name)
         
         # Spacer
         layout_left.addWidget(QtWidgets.QLabel(""))
@@ -87,6 +97,7 @@ class MainWindow(QtWidgets.QWidget):
         # Input fields
         add_horizontal_widgets(layout_left, QtWidgets.QLabel("Camera: "), self.line_camera)
         add_horizontal_widgets(layout_left, QtWidgets.QLabel("Focal Length: "), self.line_focal_length)
+        add_horizontal_widgets(layout_left, QtWidgets.QLabel("Location: "), self.line_location)
         add_horizontal_widgets(layout_left, QtWidgets.QLabel("Date: "), self.date)
         layout_left.addStretch()
         layout_left.addWidget(QtWidgets.QLabel("Output Path"))
@@ -191,19 +202,19 @@ def removeFiles(target):
         
     elif target == 'darks':
         row = window.list_darks.currentRow()
-        logging.info("Removing dark file: " + str(light_files[row]))
+        logging.info("Removing dark file: " + str(dark_files[row]))
         dark_files.pop(row)
         window.list_darks.takeItem(row)
         
     elif target == 'flats':
         row = window.list_flats.currentRow()
-        logging.info("Removing flat file: " + str(light_files[row]))
+        logging.info("Removing flat file: " + str(flat_files[row]))
         flat_files.pop(row)
         window.list_flats.takeItem(row)
         
     elif target == 'bias':
         row = window.list_lights.currentRow()
-        logging.info("Removing bias file: " + str(light_files[row]))
+        logging.info("Removing bias file: " + str(bias_files[row]))
         light_files.pop(row)
         window.list_lights.takeItem(row)
         
