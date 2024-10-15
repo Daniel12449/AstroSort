@@ -2,7 +2,7 @@ from PySide6 import QtWidgets
 from CustomWidgets import DropList
 from PySide6.QtCore import QDateTime, QThreadPool
 
-class MainWindow(QtWidgets.QWidget):
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("AstroSort")
@@ -24,11 +24,14 @@ class MainWindow(QtWidgets.QWidget):
 
         self.thread_manager = QThreadPool()
         
+        self.mainWidget = QtWidgets.QWidget()
+        self.setCentralWidget(self.mainWidget)
+        
         main_layout = QtWidgets.QHBoxLayout()
         layout_right = QtWidgets.QVBoxLayout()
         layout_left = QtWidgets.QVBoxLayout()
         
-        self.setLayout(main_layout)
+        self.mainWidget.setLayout(main_layout)
         
         # Left side Sublayouts
         main_layout.addLayout(layout_left)
@@ -159,6 +162,10 @@ class MainWindow(QtWidgets.QWidget):
         layout_right.addWidget(self.list_bias)
         
         layout_right.addStretch()
+        
+        # Status Bar
+        #self.statusBar().showMessage("Not all required fields are filled.")
+
             
     def displayStack(self, i):
         from AstroSort import updateCategory
