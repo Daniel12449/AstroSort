@@ -190,7 +190,7 @@ def copy_and_rename():
         logging.error("Location not set!")
         
     else:
-        date = str(mainWindow.date.date().day()) + "-" + str(mainWindow.date.date().month()) + "-" + str(mainWindow.date.date().year())
+        date = str(mainWindow.date.date().year() + "-" + str(mainWindow.date.date().month()) + "-" + str(mainWindow.date.date().day()))
         output_path_final = output_path / pathlib.Path(category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
         logging.info("Base output path set to: " + str(output_path_final))
         
@@ -295,5 +295,3 @@ if __name__ == "__main__":
     
     mainWindow.show()
     sys.exit(app.exec())
-
-        
