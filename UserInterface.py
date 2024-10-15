@@ -39,7 +39,7 @@ class MainWindow(QtWidgets.QWidget):
         # -- Begin left side layout --
         # Search Layout named Widgets
         self.combo_box_category = QtWidgets.QComboBox()
-        self.combo_box_category.addItems(['Deep Sky Objects', 'Solar System', 'Comets', 'Constellations'])
+        self.combo_box_category.addItems(['Deep Sky Objects', 'Solar System', 'Comets', 'Constellations', 'Custom'])
         self.button_query = QtWidgets.QPushButton("Search")
         self.line_simbad_query = QtWidgets.QLineEdit(placeholderText="Enter Object")
         self.label_ra_coordinates = QtWidgets.QLabel()
@@ -47,6 +47,7 @@ class MainWindow(QtWidgets.QWidget):
         self.line_object_name1 = QtWidgets.QLineEdit()
         self.line_object_name2 = QtWidgets.QLineEdit()
         self.line_object_name3 = QtWidgets.QLineEdit()
+        self.line_category = QtWidgets.QLineEdit()
         self.line_camera = QtWidgets.QLineEdit()
         self.line_focal_length = QtWidgets.QLineEdit()
         self.line_location = QtWidgets.QLineEdit()
@@ -93,13 +94,20 @@ class MainWindow(QtWidgets.QWidget):
         hbox_manual_entry3 = QtWidgets.QHBoxLayout()
         add_horizontal_widgets(hbox_manual_entry3, QtWidgets.QLabel("Enter constellation:"),  self.line_object_name3)
         self.manualEntryStack3.setLayout(hbox_manual_entry3)
-     
         
+        # Manual entry widget 4
+        self.manualEntryStack4 = QtWidgets.QWidget()
+        hbox_manual_entry4 = QtWidgets.QVBoxLayout()
+        add_horizontal_widgets(hbox_manual_entry4, QtWidgets.QLabel("Enter category:"),  self.line_category)
+        add_horizontal_widgets(hbox_manual_entry4, QtWidgets.QLabel("Enter constellation:"),  self.line_object_name3)
+        self.manualEntryStack4.setLayout(hbox_manual_entry4)
+     
         # Adding Widgets to stack
         self.stackedWidget.addWidget(self.searchLayout)
         self.stackedWidget.addWidget(self.manualEntryStack1)
         self.stackedWidget.addWidget(self.manualEntryStack2) 
-        self.stackedWidget.addWidget(self.manualEntryStack3)     
+        self.stackedWidget.addWidget(self.manualEntryStack3) 
+        self.stackedWidget.addWidget(self.manualEntryStack4)       
         layout_left.addWidget(self.stackedWidget)    
 
         # Spacer
@@ -164,5 +172,3 @@ class MainWindow(QtWidgets.QWidget):
             category = "Comets"
         elif i == 4:
             category = "Constellations"
-
-            
