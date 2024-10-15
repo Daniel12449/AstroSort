@@ -164,9 +164,15 @@ class MainWindow(QtWidgets.QMainWindow):
         layout_right.addStretch()
         
         # Status Bar
-        #self.statusBar().showMessage("Not all required fields are filled.")
+        self.statusBar_line_status = QtWidgets.QLabel("Not all required fields are filled.")
+        self.statusBar_line_filecount = QtWidgets.QLabel("Lights: 0 · Darks: 0 · Flats: 0 · Bias: 0")
+        self.button_reset = QtWidgets.QPushButton("Reset")
+        self.statusBar().size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.statusBar().addWidget(self.statusBar_line_status)
+        self.statusBar().addWidget(QtWidgets.QLabel("  |  "))
+        self.statusBar().addWidget(self.statusBar_line_filecount)
+        self.statusBar().addPermanentWidget(self.button_reset)
 
-            
     def displayStack(self, i):
         from AstroSort import updateCategory
         self.stackedWidget.setCurrentIndex(i)

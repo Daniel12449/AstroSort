@@ -100,6 +100,7 @@ def openFiles(target):
             bias_files.append(path)
             mainWindow.list_bias.addItem(path.name)
             logging.info("Bias file added: " + str(path))
+    updateStatusBar()
             
 def removeFiles(target):
     if target == 'lights':
@@ -125,6 +126,7 @@ def removeFiles(target):
         logging.info("Removing bias file: " + str(bias_files[row]))
         light_files.pop(row)
         mainWindow.list_lights.takeItem(row)
+    updateStatusBar()
         
 def updateOutputPath():
     global output_path
@@ -147,6 +149,9 @@ def updateLocation():
     global location
     location = mainWindow.line_location.text()
     logging.info("Location set to: " + location)
+    
+def updateStatusBar():
+    mainWindow.statusBar_line_filecount.setText("Lights: " + str(len(light_files)) + " · Darks: " + str(len(dark_files)) + " · Flats: " + str(len(flat_files)) + " · Bias: " + str(len(bias_files)))
     
 def updateDate():
     if light_files != []:
