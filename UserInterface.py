@@ -47,6 +47,7 @@ class MainWindow(QtWidgets.QWidget):
         self.line_object_name1 = QtWidgets.QLineEdit()
         self.line_object_name2 = QtWidgets.QLineEdit()
         self.line_object_name3 = QtWidgets.QLineEdit()
+        self.line_object_name4 = QtWidgets.QLineEdit()
         self.line_category = QtWidgets.QLineEdit()
         self.line_camera = QtWidgets.QLineEdit()
         self.line_focal_length = QtWidgets.QLineEdit()
@@ -99,7 +100,7 @@ class MainWindow(QtWidgets.QWidget):
         self.manualEntryStack4 = QtWidgets.QWidget()
         hbox_manual_entry4 = QtWidgets.QVBoxLayout()
         add_horizontal_widgets(hbox_manual_entry4, QtWidgets.QLabel("Enter category:"),  self.line_category)
-        add_horizontal_widgets(hbox_manual_entry4, QtWidgets.QLabel("Enter constellation:"),  self.line_object_name3)
+        add_horizontal_widgets(hbox_manual_entry4, QtWidgets.QLabel("Enter object name:"),  self.line_object_name4)
         self.manualEntryStack4.setLayout(hbox_manual_entry4)
      
         # Adding Widgets to stack
@@ -160,15 +161,7 @@ class MainWindow(QtWidgets.QWidget):
         layout_right.addStretch()
             
     def displayStack(self, i):
-        global category
-
+        from AstroSort import updateCategory
         self.stackedWidget.setCurrentIndex(i)
-        
-        if i == 1:
-            category = "Deep Sky Objects"
-        elif i == 2:
-            category = "Solar System"
-        elif i == 3:
-            category = "Comets"
-        elif i == 4:
-            category = "Constellations"
+        updateCategory(i)
+    
