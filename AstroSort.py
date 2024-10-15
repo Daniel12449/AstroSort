@@ -12,7 +12,7 @@ from global_vars import *
 
 output_path = None
 object_name = None
-category = "Deep Sky Objects"
+category = "DeepSky"
 camera = None
 focal_length = None
 location = None
@@ -55,8 +55,26 @@ def updateObjectName(source):
         object_name = window.line_object_name2.text()
     elif source == 3:
         object_name = window.line_object_name3.text()
+    elif source == 5:
+        object_name = window.line_object_name4.text()
         
-    logging.info("Object name set to: " + object_name)
+    logging.info("Object name set to: " + str(object_name))
+    
+def updateCategory(source):
+    global category
+    
+    if source == 0:
+        category = "DeepSky"
+    elif source == 1:
+        category = "SolarSystem"
+    elif source == 2:
+        category = "Comets"
+    elif source == 3:
+        category = "Constellations"
+    elif source == 4:
+        category = window.line_category.text()
+        
+    logging.info("Object category set to: " + str(category))
     
 def openFiles(target):
     file_list = QtWidgets.QFileDialog.getOpenFileNames()[0]
@@ -245,6 +263,8 @@ if __name__ == "__main__":
     window.line_object_name1.editingFinished.connect(lambda: updateObjectName(1))
     window.line_object_name2.editingFinished.connect(lambda: updateObjectName(2))
     window.line_object_name3.editingFinished.connect(lambda: updateObjectName(3))
+    window.line_object_name4.editingFinished.connect(lambda: updateObjectName(4))
+    window.line_category.editingFinished.connect(lambda: updateCategory(5))
     
     window.button_query.clicked.connect(querySimbad)
     window.line_simbad_query.returnPressed.connect(querySimbad)
