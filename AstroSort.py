@@ -7,7 +7,7 @@ import logging
 from astroquery.simbad import Simbad
 from PySide6 import QtWidgets
 from PySide6.QtCore import Slot
-from UserInterface import MainWindow
+from UserInterface import MainWindow, ResetWindow
 from global_vars import *
 
 output_path = None
@@ -167,8 +167,8 @@ def setCancel():
         logging.warning("Process canceled!")
     elif canceled == True:
         canceled = False
-        logging.info("Process reset.")
-    
+        logging.info("Process reset.") 
+
 @Slot()
 def copy_and_rename():
     global object_name, output_path, camera, focal_length, canceled, category, location

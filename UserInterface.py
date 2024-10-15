@@ -172,9 +172,53 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusBar().addWidget(QtWidgets.QLabel("  |  "))
         self.statusBar().addWidget(self.statusBar_line_filecount)
         self.statusBar().addPermanentWidget(self.button_reset)
+        
+        # Reset Dialog
+        self.button_reset.clicked.connect(self.openResetDialog)
+        
+    def openResetDialog(self, s):
+        self.resetDialog = ResetWindow()
+        self.resetDialog.exec()
 
     def displayStack(self, i):
         from AstroSort import updateCategory
         self.stackedWidget.setCurrentIndex(i)
         updateCategory(i)
-    
+            
+class ResetWindow(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Reset")
+
+        QBtn = (
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        
+        self.checkbox_clear_lights = QtWidgets.QCheckBox("Clear light files")
+        self.checkbox_clear_lights.setChecked(True)
+        self.checkbox_clear_darks = QtWidgets.QCheckBox("Clear dark files")
+        self.checkbox_clear_darks.setChecked(True)
+        self.checkbox_clear_flats = QtWidgets.QCheckBox("Clear flat files")
+        self.checkbox_clear_flats.setChecked(True)
+        self.checkbox_clear_bias = QtWidgets.QCheckBox("Clear bias files")
+        self.checkbox_clear_bias.setChecked(True)
+        self.checkbox_clear_metadata = QtWidgets.QCheckBox("Clear metadata")
+
+        layout = QtWidgets.QVBoxLayout()
+        message = QtWidgets.QLabel("Choose what to reset")
+        layout.addWidget(message)
+        layout.addStretch()
+        layout.addWidget(self.checkbox_clear_lights)
+        layout.addWidget(self.checkbox_clear_darks)
+        layout.addWidget(self.checkbox_clear_flats)
+        layout.addWidget(self.checkbox_clear_bias)
+        layout.addStretch()
+        layout.addWidget(self.checkbox_clear_metadata)
+        layout.addStretch()
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
