@@ -171,6 +171,7 @@ def setCancel():
 
 @Slot()
 def copy_and_rename():
+    logging.info("Thread for copying started")
     global object_name, output_path, camera, focal_length, canceled, category, location
     
     if object_name == None or output_path == None:
@@ -188,9 +189,12 @@ def copy_and_rename():
     if location == None:
         QtWidgets.QMessageBox.about(None, "Error", "Please enter a location first.")
         logging.error("Location not set!")
-        
+    
+    
     else:
-        date = str(mainWindow.date.date().year() + "-" + str(mainWindow.date.date().month()) + "-" + str(mainWindow.date.date().day()))
+        logging.info("Checks passed.")
+        date = str(mainWindow.date.date().year()) + "-" + str(mainWindow.date.date().month()) + "-" + str(mainWindow.date.date().day())
+        logging.info("Set date to " + str(date))
         output_path_final = output_path / pathlib.Path(category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
         logging.info("Base output path set to: " + str(output_path_final))
         
