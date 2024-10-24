@@ -415,10 +415,6 @@ def preparePaths():
         output_dir = output_final_dir / pathlib.Path('BIAS') 
         filename = "B_" + camera + "_" + focal_length + "_" + file.name
         output_files_list['bias_output'].append(output_dir / pathlib.Path(filename))
-
-    #for key in output_files_list.keys():
-    #    for element in output_files_list[key]:
-    #        logging.info(str(key) + '   ->   ' + str(element))
    
 @Slot()      
 def copyProcess():
@@ -521,7 +517,6 @@ if __name__ == "__main__":
     window.search_box.line_sbdb_query.returnPressed.connect(querySBDB)
     
     # Files Tab
-    #window.treeWidget.currentItemChanged.connect(updateTreePaths)
     window.button_refresh.clicked.connect(populateTreeWidget)
     window.button_remove_all.clicked.connect(clearFileLists)
     window.button_remove_selected.clicked.connect(removeItems)
