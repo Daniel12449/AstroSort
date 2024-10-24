@@ -226,7 +226,33 @@ def clearFileLists():
     output_files_list['flat_output'].clear()
     output_files_list['bias_output'].clear()
     populateTreeWidget()
-        
+    
+def updateFilePathLabels():
+    item = window.treeWidget.currentItem()
+    try:
+        parent = item.parent().text(0)
+    except:
+        logging.info('Selected Entry has no file paths.')
+        return
+    
+    if parent == "Light files": 
+        input_key = 'light_input'
+        output_key = 'light_output'
+    if parent == "Dark files": 
+        input_key = 'dark_input'
+        output_key = 'dark_output'
+    if parent == "Flat files": 
+        input_key = 'flat_input'
+        output_key = 'flat_output'
+    if parent == "Bias files": 
+        input_key = 'bias_input'
+        output_key = 'bias_output'
+    
+    input_path = next((entry for entry in output_files_list[input_key] if item.text(0) in str(entry)), 'No file selected.')
+    output_path = next((entry for entry in output_files_list[output_key] if item.text(0) in str(entry)), 'No file selected. Prepare filepaths first.')
+    
+    window.label_selected_inputpath.setText(str(input_path))
+    window.label_selected_outputpath.setText(str(output_path))
 
 def querySimbad():
     window.search_box.combo_box_query_simbad.clear()
@@ -524,6 +550,7 @@ if __name__ == "__main__":
     window.button_add_darks.dropSignal.connect(populateTreeWidget)
     window.button_add_flats.dropSignal.connect(populateTreeWidget)
     window.button_add_bias.dropSignal.connect(populateTreeWidget)
+    window.treeWidget.currentItemChanged.connect(updateFilePathLabels)
     
     # Process Tab
     window.button_output_path.clicked.connect(setBaseDirectory)
