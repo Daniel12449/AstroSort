@@ -36,7 +36,33 @@ class MainWindow(QtWidgets.QMainWindow):
         ## Setup of Main tab
         self.tab1_main_layout = QtWidgets.QHBoxLayout()
         self.tab1_left_layout = QtWidgets.QVBoxLayout()
-        self.tab1_right_layout = QtWidgets.QVBoxLayout()
+        self.tab1_right_layout = QtWidgets.QFrame()
+        self.tab1_right_layout.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
+        self.tab1_right_layout.setLineWidth(2)
+        
+        ## Right Side
+        # Object definition
+        self.layout_right_box = QtWidgets.QVBoxLayout()
+        self.label_logo = QtWidgets.QLabel("AstroSort", alignment=Qt.AlignmentFlag.AlignHCenter )
+        self.label_logo.setStyleSheet("font-weight: bold; font-size: 45px")
+        self.label_version = QtWidgets.QLabel("v1.0", alignment=Qt.AlignmentFlag.AlignHCenter )
+        self.label_count_lights = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
+        self.label_count_darks = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
+        self.label_count_flats = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
+        self.label_count_bias = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
+    
+        # Layout definition
+        self.layout_right_box.addWidget(self.label_logo)
+        self.layout_right_box.addWidget(self.label_version)
+        self.layout_right_box.addStretch()
+        vbox_count = QtWidgets.QVBoxLayout(alignment=Qt.AlignmentFlag.AlignHCenter )
+        add_horizontal_widgets(vbox_count, QtWidgets.QLabel('Light Files:'), self.label_count_lights)
+        add_horizontal_widgets(vbox_count, QtWidgets.QLabel('Dark Files:'), self.label_count_darks)
+        add_horizontal_widgets(vbox_count, QtWidgets.QLabel('Flat Files:'), self.label_count_flats)
+        add_horizontal_widgets(vbox_count, QtWidgets.QLabel('Bias Files:'), self.label_count_bias)
+        self.layout_right_box.addLayout(vbox_count)
+        self.layout_right_box.addStretch()
+        self.tab1_right_layout.setLayout(self.layout_right_box)
         
         ## Left Side
         # Search box
@@ -44,7 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tab1_left_layout.addWidget(self.search_box)
         
         self.tab1_main_layout.addLayout(self.tab1_left_layout, 3)
-        self.tab1_main_layout.addLayout(self.tab1_right_layout, 1)
+        self.tab1_main_layout.addWidget(self.tab1_right_layout, 1)
         self.tab1.setLayout(self.tab1_main_layout)
         self.tab1_left_layout.addStretch()
         
@@ -198,6 +224,12 @@ def populateTreeWidget():
 
         window.treeWidget.insertTopLevelItems(0, items)
         window.treeWidget.resizeColumnToContents(0)
+        
+        # Send counts to mainpage
+        window.label_count_lights.setText(str(len(output_files_list['light_input'])))
+        window.label_count_darks.setText(str(len(output_files_list['dark_input'])))
+        window.label_count_flats.setText(str(len(output_files_list['flat_input'])))
+        window.label_count_bias.setText(str(len(output_files_list['bias_input'])))
     
 def removeItems():
     items = window.treeWidget.selectedItems()
@@ -441,6 +473,38 @@ def preparePaths():
         output_dir = output_final_dir / pathlib.Path('BIAS') 
         filename = "B_" + camera + "_" + focal_length + "_" + file.name
         output_files_list['bias_output'].append(output_dir / pathlib.Path(filename))
+        
+def resetAll():
+    output_files_list['light_input'].clear()
+    output_files_list['dark_input'].clear()
+    output_files_list['flat_input'].clear()
+    output_files_list['bias_input'].clear()
+    output_files_list['light_output'].clear()
+    output_files_list['dark_output'].clear()
+    output_files_list['flat_output'].clear()
+    output_files_list['bias_output'].clear()
+    
+    window.line_camera.clear()
+    window.line_focal_length.clear()
+    window.line_location.clear()
+    window.line_output_path.clear()
+    window.date.setDateTime(QDateTime.currentDateTime())
+    
+    window.search_box.line_constellation.clear()
+    window.search_box.line_custom_category.clear()
+    window.search_box.line_custom_name.clear()
+    window.search_box.line_largeBodies_custom.clear()
+    window.search_box.line_sbdb_query.clear()
+    window.search_box.line_simbad_query.clear()
+    window.search_box.combo_box_query_simbad.clear()
+    window.search_box.label_dec_coordinates_simbad.clear()
+    window.search_box.label_ra_coordinates_simbad.clear()
+    window.search_box.label_full_name.clear()
+    window.search_box.label_short_name.clear()
+    window.search_box.label_type.clear()
+    
+    populateTreeWidget()
+    
    
 @Slot()      
 def copyProcess():
@@ -518,8 +582,7 @@ def startProcess(self):
     preparePaths()
     window.thread_manager.start(copyProcess)
     logging.info("Starting rename and copy process.")
-
-
+    
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
@@ -534,6 +597,7 @@ if __name__ == "__main__":
     window.button_add_flats.clicked.connect(lambda: openFiles('flats'))
     window.button_add_bias.clicked.connect(lambda: openFiles('bias'))
     window.button_prepare.clicked.connect(preparePaths)
+    window.button_reset.clicked.connect(resetAll)
     
     # Main Tab
     window.search_box.button_simbad_query.clicked.connect(querySimbad)
