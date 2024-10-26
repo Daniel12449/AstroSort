@@ -179,8 +179,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusBar().addWidget(self.button_add_bias)
         self.statusBar().addPermanentWidget(self.button_prepare)
         self.statusBar().addPermanentWidget(self.button_reset)
-        
+
 ## -- Start of functions --
+
+def resetBox():
+    result  = QtWidgets.QMessageBox.question(None, 'Reset', "Do you really want to reset all files and settings?",
+            QtWidgets.QMessageBox.Reset | QtWidgets.QMessageBox.Cancel)
+            
+    if result == QtWidgets.QMessageBox.Reset:
+        resetAll()
 
 def openFiles(target):
     file_list = QtWidgets.QFileDialog.getOpenFileNames()[0]
@@ -597,7 +604,7 @@ if __name__ == "__main__":
     window.button_add_flats.clicked.connect(lambda: openFiles('flats'))
     window.button_add_bias.clicked.connect(lambda: openFiles('bias'))
     window.button_prepare.clicked.connect(preparePaths)
-    window.button_reset.clicked.connect(resetAll)
+    window.button_reset.clicked.connect(resetBox)
     
     # Main Tab
     window.search_box.button_simbad_query.clicked.connect(querySimbad)
