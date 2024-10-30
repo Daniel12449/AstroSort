@@ -82,11 +82,10 @@ class files_tab(QtWidgets.QWidget):
         ## Setup of Files Tab
         self.tab2_layout = QtWidgets.QVBoxLayout()
         self.treeWidget = QtWidgets.QTreeWidget()
-        self.label_selected_inputpath = QtWidgets.QLabel("No file selected.")
-        self.label_selected_outputpath = QtWidgets.QLabel("No file selected. Prepare filepaths first.")
         self.button_remove_selected = QtWidgets.QPushButton("Remove selected")
         self.button_remove_all = QtWidgets.QPushButton("Clear")
         self.button_refresh = QtWidgets.QPushButton("Refresh")
+        self.checkbox_paths = QtWidgets.QCheckBox()
         
         self.treeWidget.setColumnCount(1)
         self.treeWidget.setHeaderLabels(['File type'])
@@ -102,8 +101,7 @@ class files_tab(QtWidgets.QWidget):
         
         self.tab2_layout.addLayout(self.hbox_file_edit_bar)
         self.tab2_layout.addWidget(self.treeWidget)
-        add_horizontal_widgets(self.tab2_layout, QtWidgets.QLabel("Input Path: "), self.label_selected_inputpath)
-        add_horizontal_widgets(self.tab2_layout, QtWidgets.QLabel("Output Path: "), self.label_selected_outputpath)
+        add_horizontal_widgets(self.tab2_layout, QtWidgets.QLabel("Show file paths in list"), self.checkbox_paths)
         self.setLayout(self.tab2_layout)
 
 class process_tab(QtWidgets.QWidget):

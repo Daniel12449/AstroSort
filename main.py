@@ -1,4 +1,4 @@
-import sys, pathlib, logging, shutil, exiftool
+import sys, pathlib, logging, shutil, exiftool, pandas
 from PySide6 import QtWidgets
 from PySide6.QtCore import QDateTime, QThreadPool, Slot
 from astroquery.simbad import Simbad
@@ -59,53 +59,84 @@ def resetBox():
         resetAll()
 
 def openFiles(target):
+    global df_lights, df_darks, df_flats, df_bias
     file_list = QtWidgets.QFileDialog.getOpenFileNames()[0]
-    path_list = [pathlib.Path(p) for p in file_list]
     
-    if target == 'lights':
-        for path in path_list:
-            output_files_list['light_input'].append(path)
-            logging.info("Light file added: " + str(path))
+    path_list = [pathlib.Path(p) for p in file_list]
+    name_list = [p.name for p in path_list]
+    
+    
+    files = pandas.DataFrame({
+        'name': name_list,
+        'input_path': path_list
+    })
+    
+    if target == 'lights':    
+        df_lights = pandas.concat([df_lights, files], ignore_index=True)
+        logging.info('''Light files added: \n''' + str(df_lights))
     elif target == 'darks':
-        for path in path_list:
-            output_files_list['dark_input'].append(path)
-            logging.info("Dark file added: " + str(path))
+        df_darks = pandas.concat([df_darks, files], ignore_index=True)
+        logging.info('''Dark files added: \n''' + str(df_darks))
     elif target == 'flats':
-        for path in path_list:
-            output_files_list['flat_input'].append(path)
-            logging.info("Flat file added: " + str(path))
+        df_flats = pandas.concat([df_flats, files], ignore_index=True)
+        logging.info('''Flat files added: \n''' + str(df_flats))
     elif target == 'bias':
-        for path in path_list:
-            output_files_list['bias_input'].append(path)
-            logging.info("Bias file added: " + str(path))
+        df_bias = pandas.concat([df_bias, files], ignore_index=True)
+        logging.info('''Bias files added: \n''' + str(df_bias))
     populateTreeWidget()
             
 def populateTreeWidget():
         window.tab2.treeWidget.clear()
-        
-        combined_file_list = {
-            'Light files': output_files_list['light_input'],
-            'Dark files': output_files_list['dark_input'],
-            'Flat files': output_files_list['flat_input'],
-            'Bias files': output_files_list['bias_input']
-        }
-        
-        items = []
-        for key, values in combined_file_list.items():
-            item = QtWidgets.QTreeWidgetItem([key])
-            for value in values:
-                child = QtWidgets.QTreeWidgetItem([value.name])
-                item.addChild(child)
-            items.append(item)
 
-        window.tab2.treeWidget.insertTopLevelItems(0, items)
-        window.tab2.treeWidget.resizeColumnToContents(0)
+        if len(df_lights.index) != 0:
+            columns = df_lights.columns.values.tolist()
+        elif len(df_darks.index) != 0:
+            columns = df_darks.columns.values.tolist()
+        elif len(df_flats.index) != 0:
+            columns = df_flats.columns.values.tolist()
+        elif len(df_bias.index) != 0:
+            columns = df_bias.columns.values.tolist()
+        else:
+            columns = []
+            return
+
+        window.tab2.treeWidget.setColumnCount(len(columns))
+        window.tab2.treeWidget.setHeaderLabels(columns)
         
+        if window.tab2.checkbox_paths.checkState() == Qt.CheckState.Unchecked: 
+            state = True
+        else: 
+            state = False
+        
+        if 'input_path' in columns:
+           window.tab2.treeWidget.setColumnHidden(columns.index('input_path'), state)
+        if 'output_path' in columns:
+            window.tab2.treeWidget.setColumnHidden(columns.index('output_path'), state)
+        
+        for i, df in enumerate([df_lights, df_darks, df_flats, df_bias]):
+            if i == 0: parent_item = QtWidgets.QTreeWidgetItem(["Light files"])
+            if i == 1: parent_item = QtWidgets.QTreeWidgetItem(["Dark files"])
+            if i == 2: parent_item = QtWidgets.QTreeWidgetItem(["Flat files"])
+            if i == 3: parent_item = QtWidgets.QTreeWidgetItem(["Bias files"])
+
+            for index, row in df.iterrows():
+                child = QtWidgets.QTreeWidgetItem(row["name"])
+                for index, value in enumerate(columns):
+                    child.setText(index, str(row[value]))
+                parent_item.addChild(child)
+            window.tab2.treeWidget.insertTopLevelItem(0, parent_item)
+
+        for column in range(len(columns)):
+            window.tab2.treeWidget.resizeColumnToContents(column)   
+        window.tab2.treeWidget.resizeColumnToContents(0)   
+
+        window.tab2.treeWidget.expandAll()
+
         # Send counts to mainpage
-        window.tab1.label_count_lights.setText(str(len(output_files_list['light_input'])))
-        window.tab1.label_count_darks.setText(str(len(output_files_list['dark_input'])))
-        window.tab1.label_count_flats.setText(str(len(output_files_list['flat_input'])))
-        window.tab1.label_count_bias.setText(str(len(output_files_list['bias_input'])))
+        window.tab1.label_count_lights.setText(str(len(df_lights)))
+        window.tab1.label_count_darks.setText(str(len(df_darks)))
+        window.tab1.label_count_flats.setText(str(len(df_flats)))
+        window.tab1.label_count_bias.setText(str(len(df_bias))) 
     
 def removeItems():
     items = window.tab2.treeWidget.selectedItems()
@@ -115,53 +146,25 @@ def removeItems():
         name = item.text(0)
         logging.info('Removing ' + name + ' from ' + parent)
         
-        if parent == "Light files": parent = 'light_input'
-        if parent == "Dark files": parent = 'dark_input'
-        if parent == "Flat files": parent = 'flat_input'
-        if parent == "Bias files": parent = 'bias_input'
+        if parent == "Light files": 
+            df_lights.drop(df_lights[df_lights['name'] == name].index, inplace=True)
+        if parent == "Dark files": 
+            df_darks.drop(df_darks[df_darks['name'] == name].index, inplace=True)
+        if parent == "Flat files": 
+            df_flats.drop(df_flats[df_flats['name'] == name].index, inplace=True)
+        if parent == "Bias files": 
+            df_bias.drop(df_bias[df_bias['name'] == name].index, inplace=True)
         
-        output_files_list[parent].remove(pathlib.Path(next((entry for entry in output_files_list[parent] if name in str(entry)), None)))
     populateTreeWidget()
 
 def clearFileLists():
-    output_files_list['light_input'].clear()
-    output_files_list['dark_input'].clear()
-    output_files_list['flat_input'].clear()
-    output_files_list['bias_input'].clear()
-    
-    output_files_list['light_output'].clear()
-    output_files_list['dark_output'].clear()
-    output_files_list['flat_output'].clear()
-    output_files_list['bias_output'].clear()
+    global df_lights, df_darks, df_flats, df_bias
+    df_lights = df_lights.iloc[0:0]
+    df_darks  = df_darks.iloc[0:0]
+    df_flats  = df_flats.iloc[0:0]
+    df_bias   = df_bias.iloc[0:0]
     populateTreeWidget()
     
-def updateFilePathLabels():
-    item = window.tab2.treeWidget.currentItem()
-    try:
-        parent = item.parent().text(0)
-    except:
-        logging.info('Selected Entry has no file paths.')
-        return
-    
-    if parent == "Light files": 
-        input_key = 'light_input'
-        output_key = 'light_output'
-    if parent == "Dark files": 
-        input_key = 'dark_input'
-        output_key = 'dark_output'
-    if parent == "Flat files": 
-        input_key = 'flat_input'
-        output_key = 'flat_output'
-    if parent == "Bias files": 
-        input_key = 'bias_input'
-        output_key = 'bias_output'
-    
-    input_path = next((entry for entry in output_files_list[input_key] if item.text(0) in str(entry)), 'No file selected.')
-    output_path = next((entry for entry in output_files_list[output_key] if item.text(0) in str(entry)), 'No file selected. Prepare filepaths first.')
-    
-    window.tab2.label_selected_inputpath.setText(str(input_path))
-    window.tab2.label_selected_outputpath.setText(str(output_path))
-
 def querySimbad():
     window.tab1.search_box.combo_box_query_simbad.clear()
     queryString = window.tab1.search_box.line_simbad_query.text()
@@ -216,7 +219,7 @@ def querySBDB():
 def gatherProcessParameters():
     global output_final_dir 
     current_category = window.tab1.search_box.currentIndex()
-    date = str(window.tab1.date.date().year()) + "-" + str(window.tab1.date.date().month()) + "-" + str(window.date.date().day())
+    date = str(window.tab1.date.date().year()) + "-" + str(window.tab1.date.date().month()) + "-" + str(window.tab1.date.date().day())
     location = window.tab1.line_location.text()
     camera = window.tab1.line_camera.text()
     focal_length = window.tab1.line_focal_length.text()
@@ -315,55 +318,42 @@ def setCancel():
         logging.info("Process reset.") 
         
 def preparePaths():
-    global output_final_dir, output_files_list
+    global output_final_dir, output_files_list, df_lights, df_darks, df_flats, df_bias
     try:
         gatherProcessParameters()   
         camera = window.tab3.label_process_camera.text()
         focal_length = window.tab3.label_process_focal_length.text()
     except:
         QtWidgets.QMessageBox.about(None, "Starting Process", "Please correct any errors and try again.")
-        return
-    
-    # Clear output paths
-    output_files_list['light_output'].clear()
-    output_files_list['dark_output'].clear()
-    output_files_list['flat_output'].clear()
-    output_files_list['bias_output'].clear()
+        return    
           
-    for file in output_files_list['light_input']:
+    for index, row in df_lights.iterrows():
         output_dir = output_final_dir / pathlib.Path('LIGHTS') 
-        filename = "L_" + camera + "_" + focal_length + "_" + file.name
-        output_files_list['light_output'].append(output_dir / pathlib.Path(filename))
+        filename = "L_" + camera + "_" + focal_length + "_" + row['name']
+        df_lights['output_path'] = output_dir / pathlib.Path(filename)
         
-    for file in output_files_list['dark_input']:
+    for index, row in df_darks.iterrows():
         output_dir = output_final_dir / pathlib.Path('DARKS') 
-        filename = "D_" + camera + "_" + focal_length + "_" + file.name
-        output_files_list['dark_output'].append(output_dir / pathlib.Path(filename))
+        filename = "D_" + camera + "_" + focal_length + "_" + row['name']
+        df_darks['output_path'] = output_dir / pathlib.Path(filename)
         
-    for file in output_files_list['flat_input']:
+    for index, row in df_flats.iterrows():
         output_dir = output_final_dir / pathlib.Path('FLATS') 
-        filename = "F_" + camera + "_" + focal_length + "_" + file.name
-        output_files_list['flat_output'].append(output_dir / pathlib.Path(filename))
+        filename = "F_" + camera + "_" + focal_length + "_" + row['name']
+        df_flats['output_path'] = output_dir / pathlib.Path(filename)
         
-    for file in output_files_list['bias_input']:
+    for index, row in df_bias.iterrows():
         output_dir = output_final_dir / pathlib.Path('BIAS') 
-        filename = "B_" + camera + "_" + focal_length + "_" + file.name
-        output_files_list['bias_output'].append(output_dir / pathlib.Path(filename))
+        filename = "B_" + camera + "_" + focal_length + "_" + row['name']
+        df_bias['output_path'] = output_dir / pathlib.Path(filename)
         
 def resetAll():
-    output_files_list['light_input'].clear()
-    output_files_list['dark_input'].clear()
-    output_files_list['flat_input'].clear()
-    output_files_list['bias_input'].clear()
-    output_files_list['light_output'].clear()
-    output_files_list['dark_output'].clear()
-    output_files_list['flat_output'].clear()
-    output_files_list['bias_output'].clear()
+    clearFileLists()
     
     window.tab1.line_camera.clear()
     window.tab1.line_focal_length.clear()
     window.tab1.line_location.clear()
-    window.line_output_path.clear()
+    window.tab3.line_output_path.clear()
     window.tab1.date.setDateTime(QDateTime.currentDateTime())
     
     window.tab1.search_box.line_constellation.clear()
@@ -402,73 +392,72 @@ def readExif():
 @Slot()      
 def copyProcess():
     #Setup of Progress bar
-    total_files = len(output_files_list['light_output']) + len(output_files_list['dark_output']) + len(output_files_list['flat_output']) + len(output_files_list['bias_output'])
-    window.progress_bar.setMinimum(0)
-    window.progress_bar.setMaximum(total_files)
+    total_files = len(df_lights) + len(df_darks) + len(df_flats) + len(df_bias)
+    window.tab3.progress_bar.setMinimum(0)
+    window.tab3.progress_bar.setMaximum(total_files)
     logging.info('Number of files to process: ' + str(total_files))
     current_file = 0
     
     # Create file paths
-    if len(output_files_list['light_output']) != 0:
+    if len(df_lights) != 0:
         logging.info('Created LIGHTS subdirectory')
         light_subfolder = output_final_dir / pathlib.Path('LIGHTS') 
         light_subfolder.mkdir(parents=True, exist_ok=True)
         
-    if len(output_files_list['dark_output']) != 0:
+    if len(df_darks) != 0:
         logging.info('Created DARKS subdirectory')
         dark_subfolder = output_final_dir / pathlib.Path('DARKS') 
         dark_subfolder.mkdir(parents=True, exist_ok=True)
         
-    if len(output_files_list['flat_output']) != 0:
+    if len(df_flats) != 0:
         logging.info('Created FLATS subdirectory')
         flat_subfolder = output_final_dir / pathlib.Path('FLATS') 
         flat_subfolder.mkdir(parents=True, exist_ok=True)
         
-    if len(output_files_list['bias_output']) != 0:
+    if len(df_bias) != 0:
         logging.info('Created BIAS subdirectory')
         bias_subfolder = output_final_dir / pathlib.Path('BIAS') 
         bias_subfolder.mkdir(parents=True, exist_ok=True)
     
-    
-    for index in range(len(output_files_list['light_input'])):
+    for index, element in df_lights.iterrows():
         if canceled: return None
         current_file += 1
-        window.progress_bar.setValue(current_file)
-        input = output_files_list['light_input'][index]
-        output = output_files_list['light_output'][index]
+        window.tab3.progress_bar.setValue(current_file)
+        input = df_lights['input_path'].iloc[index]
+        output = df_lights['output_path'].iloc[index]
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
-        shutil.copy(input, output)
+        #shutil.copy(input, output)
         
-    for index in range(len(output_files_list['dark_input'])):
+    for index, element in df_darks.iterrows():
         if canceled: return None
         current_file += 1
-        window.progress_bar.setValue(current_file)
-        input = output_files_list['dark_input'][index]
-        output = output_files_list['dark_output'][index]
+        window.tab3.progress_bar.setValue(current_file)
+        input = df_darks['input_path'].iloc[index]
+        output = df_darks['output_path'].iloc[index]
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
-        shutil.copy(input, output)
+        #shutil.copy(input, output)
         
-    for index in range(len(output_files_list['flat_input'])):
+    for index, element in df_flats.iterrows():
         if canceled: return None
         current_file += 1
-        window.progress_bar.setValue(current_file)
-        input = output_files_list['flat_input'][index]
-        output = output_files_list['flat_output'][index]
+        window.tab3.progress_bar.setValue(current_file)
+        input = df_flats['input_path'].iloc[index]
+        output = df_flats['output_path'].iloc[index]
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
-        shutil.copy(input, output)
+        #shutil.copy(input, output)
         
-    for index in range(len(output_files_list['bias_input'])):
+    for index, element in df_bias.iterrows():
         if canceled: return None
         current_file += 1
-        window.progress_bar.setValue(current_file)
-        input = output_files_list['bias_input'][index]
-        output = output_files_list['bias_output'][index]
+        window.tab3.progress_bar.setValue(current_file)
+        input = df_bias['input_path'].iloc[index]
+        output = df_bias['output_path'].iloc[index]
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
-        shutil.copy(input, output)
+        #shutil.copy(input, output)
     
 @Slot()      
 def startProcess(self):
@@ -507,7 +496,7 @@ if __name__ == "__main__":
     window.button_add_darks.dropSignal.connect(populateTreeWidget)
     window.button_add_flats.dropSignal.connect(populateTreeWidget)
     window.button_add_bias.dropSignal.connect(populateTreeWidget)
-    window.tab2.treeWidget.currentItemChanged.connect(updateFilePathLabels)
+    window.tab2.checkbox_paths.stateChanged.connect(populateTreeWidget)
     
     # Process Tab
     window.tab3.button_output_path.clicked.connect(setBaseDirectory)
