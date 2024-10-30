@@ -1,9 +1,9 @@
 from PySide6 import QtWidgets
 from PySide6.QtCore import Signal
-from global_vars import *
-import pathlib, logging
+import vars
+import pathlib, logging, pandas
             
-class DropButton(QtWidgets.QPushButton):
+class DropButton(QtWidgets.QPushButton):    
     dropSignal = Signal(int) 
     
     def __init__(self, parent=None, *args, **kwargs):
@@ -22,15 +22,11 @@ class DropButton(QtWidgets.QPushButton):
         else:
             event.ignore()
 
-    def dropEvent(self, event):
-        global df_lights, df_darks, df_flats, df_bias
-        
+    def dropEvent(self, event):     
         self.dropSignal.emit(1)
         md = event.mimeData()
         if md.hasUrls():
-            file_list = md.urls()
-            print(file_list)
-            
+            file_list = md.urls()            
             path_list = [pathlib.Path(p.toLocalFile()) for p in file_list]
             name_list = [p.name for p in path_list]
             
@@ -38,23 +34,23 @@ class DropButton(QtWidgets.QPushButton):
                 'name': name_list,
                 'input_path': path_list
             })
-    
+
             if self.objectName() == 'button_add_lights':
-                df_lights = pandas.concat([df_lights, files], ignore_index=True)
-                logging.info('''Light files added: \n''' + str(df_lights))
+                vars.df_lights = pandas.concat([vars.df_lights, files], ignore_index=True)
+                logging.info('''Light files added: \n''' + str(vars.df_lights))
                     
             if self.objectName() == 'button_add_darks':
-                df_darks = pandas.concat([df_darks, files], ignore_index=True)
-                logging.info('''Dark files added: \n''' + str(df_darks))
+                global df_darks
+                vars.df_darks = pandas.concat([vars.df_darks, files], ignore_index=True)
+                logging.info('''Dark files added: \n''' + str(vars.df_darks))
                     
             if self.objectName() == 'button_add_flats':
-                df_flats = pandas.concat([df_flats, files], ignore_index=True)
-                logging.info('''Flat files added: \n''' + str(df_flats))
+                vars.df_flats = pandas.concat([vars.df_flats, files], ignore_index=True)
+                logging.info('''Flat files added: \n''' + str(vars.df_flats))
                     
             if self.objectName() == 'button_add_bias':
-                df_bias = pandas.concat([df_bias, files], ignore_index=True)
-                logging.info('''Bias files added: \n''' + str(df_bias))
-            
+                vars.df_bias = pandas.concat([vars.df_bias, files], ignore_index=True)
+                logging.info('''Bias files added: \n''' + str(vars.df_bias))
             event.acceptProposedAction()
 
 class searchWidget(QtWidgets.QTabWidget):
