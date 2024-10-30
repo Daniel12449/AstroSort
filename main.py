@@ -1,10 +1,12 @@
-import sys, pathlib, logging, shutil
+import sys, pathlib, logging, shutil, exiftool
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QDateTime, QThreadPool, Slot
+from PySide6.QtCore import QDateTime, QThreadPool, Slot
 from astroquery.simbad import Simbad
 from astroquery.jplsbdb import SBDB
-from CustomWidgets import DropButton, searchWidget
+from CustomWidgets import DropButton
+from ui_classes import *
 from global_vars import *
+
 
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QtWidgets.QMainWindow):
@@ -20,150 +22,18 @@ class MainWindow(QtWidgets.QMainWindow):
             hbox.addWidget(widget2)
             layout.addLayout(hbox)
         
-        # Main layout
-        
         self.tabWidget = QtWidgets.QTabWidget()
         self.setCentralWidget(self.tabWidget)
         
-        self.tab1 = QtWidgets.QWidget()
-        self.tab2 = QtWidgets.QWidget()
-        self.tab3 = QtWidgets.QWidget()
+        self.tab1 = main_tab()
+        self.tab2 = files_tab()
+        self.tab3 = process_tab()
+        self.tab4 = metadata_tab()
 
         self.tabWidget.addTab(self.tab1, "Main")
         self.tabWidget.addTab(self.tab2, "Files")
         self.tabWidget.addTab(self.tab3, "Process")
-        
-        ## Setup of Main tab
-        self.tab1_main_layout = QtWidgets.QHBoxLayout()
-        self.tab1_left_layout = QtWidgets.QVBoxLayout()
-        self.tab1_right_layout = QtWidgets.QFrame()
-        self.tab1_right_layout.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Raised)
-        self.tab1_right_layout.setLineWidth(2)
-        
-        ## Right Side
-        # Object definition
-        self.layout_right_box = QtWidgets.QVBoxLayout()
-        self.label_logo = QtWidgets.QLabel("AstroSort", alignment=Qt.AlignmentFlag.AlignHCenter )
-        self.label_logo.setStyleSheet("font-weight: bold; font-size: 45px")
-        self.label_version = QtWidgets.QLabel("v1.0", alignment=Qt.AlignmentFlag.AlignHCenter )
-        self.label_count_lights = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
-        self.label_count_darks = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
-        self.label_count_flats = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
-        self.label_count_bias = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
-    
-        # Layout definition
-        self.layout_right_box.addWidget(self.label_logo)
-        self.layout_right_box.addWidget(self.label_version)
-        self.layout_right_box.addStretch()
-        vbox_count = QtWidgets.QVBoxLayout(alignment=Qt.AlignmentFlag.AlignHCenter )
-        add_horizontal_widgets(vbox_count, QtWidgets.QLabel('Light Files:'), self.label_count_lights)
-        add_horizontal_widgets(vbox_count, QtWidgets.QLabel('Dark Files:'), self.label_count_darks)
-        add_horizontal_widgets(vbox_count, QtWidgets.QLabel('Flat Files:'), self.label_count_flats)
-        add_horizontal_widgets(vbox_count, QtWidgets.QLabel('Bias Files:'), self.label_count_bias)
-        self.layout_right_box.addLayout(vbox_count)
-        self.layout_right_box.addStretch()
-        self.tab1_right_layout.setLayout(self.layout_right_box)
-        
-        ## Left Side
-        # Search box
-        self.search_box = searchWidget()
-        self.tab1_left_layout.addWidget(self.search_box)
-        
-        self.tab1_main_layout.addLayout(self.tab1_left_layout, 3)
-        self.tab1_main_layout.addWidget(self.tab1_right_layout, 1)
-        self.tab1.setLayout(self.tab1_main_layout)
-        self.tab1_left_layout.addStretch()
-        
-        # Information Form
-        # Object definitions
-        self.formLayout = QtWidgets.QFormLayout()
-        self.line_camera = QtWidgets.QLineEdit()
-        self.line_focal_length = QtWidgets.QLineEdit()
-        self.line_location = QtWidgets.QLineEdit()
-        self.date = QtWidgets.QDateEdit(calendarPopup=True)
-        self.date.setDateTime(QDateTime.currentDateTime())
-        self.header_general = QtWidgets.QLabel('General information')
-        self.header_general.setStyleSheet(''' font-size: 18px; ''')
-        self.header_general.setAlignment(Qt.AlignCenter)
-        
-        self.formLayout.addRow(self.header_general)     
-        self.formLayout.addRow('Date : ', self.date )  
-        self.formLayout.addRow('Camera identifier: ', self.line_camera )
-        self.formLayout.addRow('Focal length: ', self.line_focal_length )      
-        self.formLayout.addRow('Location: ', self.line_location )      
-                  
-        
-        self.tab1_left_layout.addLayout(self.formLayout)
-        self.tab1_left_layout.addStretch()
-        
-        ## Setup of Files Tab
-        self.tab2_layout = QtWidgets.QVBoxLayout()
-        self.treeWidget = QtWidgets.QTreeWidget()
-        self.label_selected_inputpath = QtWidgets.QLabel("No file selected.")
-        self.label_selected_outputpath = QtWidgets.QLabel("No file selected. Prepare filepaths first.")
-        self.button_remove_selected = QtWidgets.QPushButton("Remove selected")
-        self.button_remove_all = QtWidgets.QPushButton("Clear")
-        self.button_refresh = QtWidgets.QPushButton("Refresh")
-        
-        self.treeWidget.setColumnCount(1)
-        self.treeWidget.setHeaderLabels(['File type'])
-        self.treeWidget.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        
-        self.hbox_file_edit_bar = QtWidgets.QHBoxLayout()
-        self.hbox_file_edit_bar.addWidget(QtWidgets.QLabel("Added Files"))
-        self.hbox_file_edit_bar.addStretch()
-        self.hbox_file_edit_bar.addWidget(self.button_refresh)
-        self.hbox_file_edit_bar.addWidget(self.button_remove_selected)
-        self.hbox_file_edit_bar.addWidget(self.button_remove_all)
-        
-        self.tab2_layout.addLayout(self.hbox_file_edit_bar)
-        self.tab2_layout.addWidget(self.treeWidget)
-        add_horizontal_widgets(self.tab2_layout, QtWidgets.QLabel("Input Path: "), self.label_selected_inputpath)
-        add_horizontal_widgets(self.tab2_layout, QtWidgets.QLabel("Output Path: "), self.label_selected_outputpath)
-        self.tab2.setLayout(self.tab2_layout)
-        
-        ## Setup of Process tab
-        #Object definitions
-        self.label_process_name = QtWidgets.QLabel()
-        self.label_process_category = QtWidgets.QLabel()
-        self.label_process_date = QtWidgets.QLabel()
-        self.label_process_camera = QtWidgets.QLabel()
-        self.label_process_focal_length = QtWidgets.QLabel()
-        self.label_process_location = QtWidgets.QLabel()
-        self.label_base_path = QtWidgets.QLabel()
-        self.label_process_parameters = QtWidgets.QLabel("Process Parameters")
-        self.label_process_parameters.setStyleSheet(''' font-size: 18px; ''')
-        self.line_output_path = QtWidgets.QLineEdit()
-        self.button_output_path = QtWidgets.QPushButton("...")
-        self.progress_bar = QtWidgets.QProgressBar()
-        self.button_start = QtWidgets.QPushButton("Start")
-        self.button_cancel = QtWidgets.QPushButton("Cancel")
-        
-        #Layout definitions
-        self.process_layout = QtWidgets.QVBoxLayout()
-        self.process_layout.setAlignment(Qt.AlignHCenter)
-        self.process_layout.addWidget(self.label_process_parameters )
-        
-        self.formLayout_process = QtWidgets.QFormLayout()
-        self.formLayout_process.addRow('Object Name : ', self.label_process_name)
-        self.formLayout_process.addRow('Object Category : ', self.label_process_category)
-        self.formLayout_process.addRow('Date : ', self.label_process_date)  
-        self.formLayout_process.addRow('Camera identifier: ', self.label_process_camera)
-        self.formLayout_process.addRow('Focal length: ', self.label_process_focal_length)      
-        self.formLayout_process.addRow('Location: ', self.label_process_location) 
-        self.formLayout_process.addRow(QtWidgets.QLabel("")) 
-        self.formLayout_process.addRow('Base path: ', self.label_base_path) 
-        
-        self.hbox_progress = QtWidgets.QHBoxLayout()
-        self.hbox_progress.addWidget(self.progress_bar)
-        self.hbox_progress.addWidget(self.button_start )
-        self.hbox_progress.addWidget(self.button_cancel)
-        
-        self.process_layout.addLayout(self.formLayout_process)
-        add_horizontal_widgets(self.process_layout, self.line_output_path, self.button_output_path)
-        self.process_layout.addLayout(self.hbox_progress)
-        self.tab3.setLayout(self.process_layout)
+        self.tabWidget.addTab(self.tab4, "Image Metadata")
         
         ## Setup of Statusbar
         self.button_add_lights = DropButton("+ Lights", objectName='button_add_lights')
@@ -172,7 +42,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_add_bias = DropButton("+ Bias  ", objectName='button_add_bias')
         self.button_reset = QtWidgets.QPushButton("Reset")
         self.button_prepare = QtWidgets.QPushButton("Prepare")
-        #self.statusBar().size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.statusBar().addWidget(self.button_add_lights)
         self.statusBar().addWidget(self.button_add_darks)
         self.statusBar().addWidget(self.button_add_flats)
@@ -212,7 +81,7 @@ def openFiles(target):
     populateTreeWidget()
             
 def populateTreeWidget():
-        window.treeWidget.clear()
+        window.tab2.treeWidget.clear()
         
         combined_file_list = {
             'Light files': output_files_list['light_input'],
@@ -229,17 +98,17 @@ def populateTreeWidget():
                 item.addChild(child)
             items.append(item)
 
-        window.treeWidget.insertTopLevelItems(0, items)
-        window.treeWidget.resizeColumnToContents(0)
+        window.tab2.treeWidget.insertTopLevelItems(0, items)
+        window.tab2.treeWidget.resizeColumnToContents(0)
         
         # Send counts to mainpage
-        window.label_count_lights.setText(str(len(output_files_list['light_input'])))
-        window.label_count_darks.setText(str(len(output_files_list['dark_input'])))
-        window.label_count_flats.setText(str(len(output_files_list['flat_input'])))
-        window.label_count_bias.setText(str(len(output_files_list['bias_input'])))
+        window.tab1.label_count_lights.setText(str(len(output_files_list['light_input'])))
+        window.tab1.label_count_darks.setText(str(len(output_files_list['dark_input'])))
+        window.tab1.label_count_flats.setText(str(len(output_files_list['flat_input'])))
+        window.tab1.label_count_bias.setText(str(len(output_files_list['bias_input'])))
     
 def removeItems():
-    items = window.treeWidget.selectedItems()
+    items = window.tab2.treeWidget.selectedItems()
     
     for item in items:
         parent = item.parent().text(0)
@@ -267,7 +136,7 @@ def clearFileLists():
     populateTreeWidget()
     
 def updateFilePathLabels():
-    item = window.treeWidget.currentItem()
+    item = window.tab2.treeWidget.currentItem()
     try:
         parent = item.parent().text(0)
     except:
@@ -290,12 +159,12 @@ def updateFilePathLabels():
     input_path = next((entry for entry in output_files_list[input_key] if item.text(0) in str(entry)), 'No file selected.')
     output_path = next((entry for entry in output_files_list[output_key] if item.text(0) in str(entry)), 'No file selected. Prepare filepaths first.')
     
-    window.label_selected_inputpath.setText(str(input_path))
-    window.label_selected_outputpath.setText(str(output_path))
+    window.tab2.label_selected_inputpath.setText(str(input_path))
+    window.tab2.label_selected_outputpath.setText(str(output_path))
 
 def querySimbad():
-    window.search_box.combo_box_query_simbad.clear()
-    queryString = window.search_box.line_simbad_query.text()
+    window.tab1.search_box.combo_box_query_simbad.clear()
+    queryString = window.tab1.search_box.line_simbad_query.text()
     
     simbad = Simbad()
     simbad.ROW_LIMIT = 10
@@ -308,26 +177,26 @@ def querySimbad():
                 if "NAME" in name: 
                     name = name.strip("NAME ")
                 coordinates = [simbad_results[i]["RA"], simbad_results[i]["DEC"], name]
-                window.search_box.combo_box_query_simbad.addItem(name, coordinates)
+                window.tab1.search_box.combo_box_query_simbad.addItem(name, coordinates)
         except: 
             QtWidgets.QMessageBox.about(None, "Simbad Search", "Simbad was unable to find an object")
             logging.warning("Simbad was unable to find a matching object.")
 
 def updateSimbadCoordinates():
-    window.search_box.label_ra_coordinates_simbad.clear()
-    window.search_box.label_dec_coordinates_simbad.clear()
+    window.tab1.search_box.label_ra_coordinates_simbad.clear()
+    window.tab1.search_box.label_dec_coordinates_simbad.clear()
     
-    current_combobox_data = window.search_box.combo_box_query_simbad.currentData()
+    current_combobox_data = window.tab1.search_box.combo_box_query_simbad.currentData()
 
     if isinstance(current_combobox_data, list):
-        window.search_box.label_ra_coordinates_simbad.setText(current_combobox_data[0])
-        window.search_box.label_dec_coordinates_simbad.setText(current_combobox_data[1])
+        window.tab1.search_box.label_ra_coordinates_simbad.setText(current_combobox_data[0])
+        window.tab1.search_box.label_dec_coordinates_simbad.setText(current_combobox_data[1])
     
     logging.info('Simbad coordinates set to: ' + str(current_combobox_data))
     
 
 def querySBDB():
-    queryString = window.search_box.line_sbdb_query.text()
+    queryString = window.tab1.search_box.line_sbdb_query.text()
 
     if queryString != "":
         sbdb = SBDB.query(queryString)
@@ -336,21 +205,21 @@ def querySBDB():
             QtWidgets.QMessageBox.about(None, "SBDB Search", "SBDB was unable to find an object")        
         
         elif 'object' in sbdb.keys():
-            window.search_box.label_full_name.setText(sbdb['object']['fullname'])
-            window.search_box.label_type.setText(sbdb['object']['orbit_class']['name'])
+            window.tab1.search_box.label_full_name.setText(sbdb['object']['fullname'])
+            window.tab1.search_box.label_type.setText(sbdb['object']['orbit_class']['name'])
             
             if 'shortname' in sbdb['object'].keys():
-                window.search_box.label_short_name.setText(sbdb['object']['shortname'])
+                window.tab1.search_box.label_short_name.setText(sbdb['object']['shortname'])
             else:
-                window.search_box.label_short_name.setText('-/-')
+                window.tab1.search_box.label_short_name.setText('-/-')
 
 def gatherProcessParameters():
     global output_final_dir 
-    current_category = window.search_box.currentIndex()
-    date = str(window.date.date().year()) + "-" + str(window.date.date().month()) + "-" + str(window.date.date().day())
-    location = window.line_location.text()
-    camera = window.line_camera.text()
-    focal_length = window.line_focal_length.text()
+    current_category = window.tab1.search_box.currentIndex()
+    date = str(window.tab1.date.date().year()) + "-" + str(window.tab1.date.date().month()) + "-" + str(window.date.date().day())
+    location = window.tab1.line_location.text()
+    camera = window.tab1.line_camera.text()
+    focal_length = window.tab1.line_focal_length.text()
     
     if location == "" or camera == "" or focal_length == "":
         QtWidgets.QMessageBox.about(None, "General Parameters", "Please fill location, camera and focal length fields.")
@@ -358,7 +227,7 @@ def gatherProcessParameters():
     
     if current_category == 0:
         object_category = "DeepSky"
-        object_name_temp = window.search_box.combo_box_query_simbad.currentData()
+        object_name_temp = window.tab1.search_box.combo_box_query_simbad.currentData()
         if isinstance(object_name_temp, list):
             object_name = object_name_temp[2].replace(" ", "")
         else:
@@ -366,8 +235,8 @@ def gatherProcessParameters():
             raise ValueError
     
     elif current_category == 1:
-        object_name_temp = window.search_box.combo_box_planets.currentText()
-        custom_object_name_tmep = window.search_box.line_largeBodies_custom.text()
+        object_name_temp = window.tab1.search_box.combo_box_planets.currentText()
+        custom_object_name_tmep = window.tab1.search_box.line_largeBodies_custom.text()
         object_category = "LargeSolarSystemBodies"        
         
         if object_name_temp == 'Custom' and custom_object_name_tmep != '':
@@ -380,8 +249,8 @@ def gatherProcessParameters():
             
     elif current_category == 2:
         object_category = "SmallSolarSystemBodies"
-        object_name_long = window.search_box.label_full_name.text()
-        object_name_short = window.search_box.label_short_name.text()
+        object_name_long = window.tab1.search_box.label_full_name.text()
+        object_name_short = window.tab1.search_box.label_short_name.text()
         
         if object_name_long == "":
             QtWidgets.QMessageBox.about(None, "Small Solar System Bodies", "Please select an object.")
@@ -394,7 +263,7 @@ def gatherProcessParameters():
     
     elif current_category == 3:
         object_category = "Constellations"
-        object_name_tmp = window.search_box.line_constellation.text()
+        object_name_tmp = window.tab1.search_box.line_constellation.text()
         
         if object_name_tmp != "":
             object_name = object_name_tmp
@@ -403,8 +272,8 @@ def gatherProcessParameters():
             raise ValueError
     
     elif current_category == 4:
-        object_category_temp = window.search_box.line_custom_category.text()
-        object_name_tmp = window.search_box.line_custom_name.text()
+        object_category_temp = window.tab1.search_box.line_custom_category.text()
+        object_name_tmp = window.tab1.search_box.line_custom_name.text()
         
         if object_name_tmp != "" and object_category_temp != "":
             object_name = object_name_tmp
@@ -413,14 +282,14 @@ def gatherProcessParameters():
             QtWidgets.QMessageBox.about(None, "Custom Category", "Please enter a custom name and category.")
             raise ValueError
 
-    window.label_process_name.setText(str(object_name))
-    window.label_process_category.setText(str(object_category))
-    window.label_process_date.setText(str(date))
-    window.label_process_camera.setText(str(camera))
-    window.label_process_focal_length.setText(str(location))
-    window.label_process_location.setText(str(focal_length))
+    window.tab3.label_process_name.setText(str(object_name))
+    window.tab3.label_process_category.setText(str(object_category))
+    window.tab3.label_process_date.setText(str(date))
+    window.tab3.label_process_camera.setText(str(camera))
+    window.tab3.label_process_focal_length.setText(str(location))
+    window.tab3.label_process_location.setText(str(focal_length))
     
-    output_path_tmp = window.line_output_path.text()
+    output_path_tmp = window.tab3.line_output_path.text()
     
     if output_path_tmp != "":
         output_path = pathlib.Path(output_path_tmp)
@@ -429,11 +298,11 @@ def gatherProcessParameters():
         raise ValueError
     
     output_final_dir = output_path / pathlib.Path(object_category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
-    window.label_base_path.setText(str(output_final_dir))
+    window.tab3.label_base_path.setText(str(output_final_dir))
 
 def setBaseDirectory():
     outputPath = QtWidgets.QFileDialog.getExistingDirectory()
-    window.line_output_path.setText(outputPath)
+    window.tab3.line_output_path.setText(outputPath)
     logging.info("Output path set to: " + str(outputPath))
     
 def setCancel():
@@ -449,8 +318,8 @@ def preparePaths():
     global output_final_dir, output_files_list
     try:
         gatherProcessParameters()   
-        camera = window.label_process_camera.text()
-        focal_length = window.label_process_focal_length.text()
+        camera = window.tab3.label_process_camera.text()
+        focal_length = window.tab3.label_process_focal_length.text()
     except:
         QtWidgets.QMessageBox.about(None, "Starting Process", "Please correct any errors and try again.")
         return
@@ -491,27 +360,44 @@ def resetAll():
     output_files_list['flat_output'].clear()
     output_files_list['bias_output'].clear()
     
-    window.line_camera.clear()
-    window.line_focal_length.clear()
-    window.line_location.clear()
+    window.tab1.line_camera.clear()
+    window.tab1.line_focal_length.clear()
+    window.tab1.line_location.clear()
     window.line_output_path.clear()
-    window.date.setDateTime(QDateTime.currentDateTime())
+    window.tab1.date.setDateTime(QDateTime.currentDateTime())
     
-    window.search_box.line_constellation.clear()
-    window.search_box.line_custom_category.clear()
-    window.search_box.line_custom_name.clear()
-    window.search_box.line_largeBodies_custom.clear()
-    window.search_box.line_sbdb_query.clear()
-    window.search_box.line_simbad_query.clear()
-    window.search_box.combo_box_query_simbad.clear()
-    window.search_box.label_dec_coordinates_simbad.clear()
-    window.search_box.label_ra_coordinates_simbad.clear()
-    window.search_box.label_full_name.clear()
-    window.search_box.label_short_name.clear()
-    window.search_box.label_type.clear()
+    window.tab1.search_box.line_constellation.clear()
+    window.tab1.search_box.line_custom_category.clear()
+    window.tab1.search_box.line_custom_name.clear()
+    window.tab1.search_box.line_largeBodies_custom.clear()
+    window.tab1.search_box.line_sbdb_query.clear()
+    window.tab1.search_box.line_simbad_query.clear()
+    window.tab1.search_box.combo_box_query_simbad.clear()
+    window.tab1.search_box.label_dec_coordinates_simbad.clear()
+    window.tab1.search_box.label_ra_coordinates_simbad.clear()
+    window.tab1.search_box.label_full_name.clear()
+    window.tab1.search_box.label_short_name.clear()
+    window.tab1.search_box.label_type.clear()
     
     populateTreeWidget()
     
+def readExif():
+    files = output_files_list['light_input'][0]
+    
+    eth = exiftool.ExifToolHelper()
+    metadata = eth.get_metadata(files)[0]
+
+    if "EXIF:ExposureTime" in metadata.keys():
+         window.tab4.exif_camera.setText(str(metadata["EXIF:Model"]))
+         window.tab4.exif_exposure.setText(str(metadata["EXIF:ExposureTime"]) + "s")
+         window.tab4.exif_date.setText(str(metadata["EXIF:DateTimeOriginal"]))
+         window.tab4.exif_iso.setText(str(metadata["EXIF:ISO"]))
+         window.tab4.exif_focal_length.setText(str(metadata["EXIF:FocalLength"]))
+         
+         
+    if "FITS:Exposure" in metadata.keys():
+        return
+   
    
 @Slot()      
 def copyProcess():
@@ -607,26 +493,29 @@ if __name__ == "__main__":
     window.button_reset.clicked.connect(resetBox)
     
     # Main Tab
-    window.search_box.button_simbad_query.clicked.connect(querySimbad)
-    window.search_box.line_simbad_query.returnPressed.connect(querySimbad)
-    window.search_box.combo_box_query_simbad.currentIndexChanged.connect(updateSimbadCoordinates)
-    window.search_box.button_sbdb_query.clicked.connect(querySBDB)
-    window.search_box.line_sbdb_query.returnPressed.connect(querySBDB)
+    window.tab1.search_box.button_simbad_query.clicked.connect(querySimbad)
+    window.tab1.search_box.line_simbad_query.returnPressed.connect(querySimbad)
+    window.tab1.search_box.combo_box_query_simbad.currentIndexChanged.connect(updateSimbadCoordinates)
+    window.tab1.search_box.button_sbdb_query.clicked.connect(querySBDB)
+    window.tab1.search_box.line_sbdb_query.returnPressed.connect(querySBDB)
     
     # Files Tab
-    window.button_refresh.clicked.connect(populateTreeWidget)
-    window.button_remove_all.clicked.connect(clearFileLists)
-    window.button_remove_selected.clicked.connect(removeItems)
+    window.tab2.button_refresh.clicked.connect(populateTreeWidget)
+    window.tab2.button_remove_all.clicked.connect(clearFileLists)
+    window.tab2.button_remove_selected.clicked.connect(removeItems)
     window.button_add_lights.dropSignal.connect(populateTreeWidget)
     window.button_add_darks.dropSignal.connect(populateTreeWidget)
     window.button_add_flats.dropSignal.connect(populateTreeWidget)
     window.button_add_bias.dropSignal.connect(populateTreeWidget)
-    window.treeWidget.currentItemChanged.connect(updateFilePathLabels)
+    window.tab2.treeWidget.currentItemChanged.connect(updateFilePathLabels)
     
     # Process Tab
-    window.button_output_path.clicked.connect(setBaseDirectory)
-    window.button_start.clicked.connect(startProcess)
-    window.button_cancel.clicked.connect(setCancel)
+    window.tab3.button_output_path.clicked.connect(setBaseDirectory)
+    window.tab3.button_start.clicked.connect(startProcess)
+    window.tab3.button_cancel.clicked.connect(setCancel)
+    
+    # Metadata Tab
+    window.tab4.button_exif_single.clicked.connect(readExif)
 
     window.show()
     app.exec()
