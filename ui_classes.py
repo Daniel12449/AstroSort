@@ -165,11 +165,12 @@ class metadata_tab(QtWidgets.QWidget):
         self.separator.setSizePolicy(QtWidgets.QSizePolicy.Minimum,QtWidgets.QSizePolicy.Expanding)
         
         # Left object definition
-        self.exif_camera = QtWidgets.QLabel()
-        self.exif_exposure = QtWidgets.QLabel()
-        self.exif_date = QtWidgets.QLabel()
-        self.exif_iso = QtWidgets.QLabel()
-        self.exif_focal_length = QtWidgets.QLabel()
+        self.exif_camera = QtWidgets.QLineEdit()
+        self.exif_exposure = QtWidgets.QLineEdit()
+        self.exif_date = QtWidgets.QLineEdit()
+        self.exif_iso = QtWidgets.QLineEdit()
+        self.exif_focal_length = QtWidgets.QLineEdit()
+        self.line_location = QtWidgets.QLineEdit()
                 
         # Left column
         self.left_column = QtWidgets.QFormLayout()
@@ -180,15 +181,19 @@ class metadata_tab(QtWidgets.QWidget):
         self.left_column.addRow('ISO: ', self.exif_iso)                         #"EXIF:ISO"
         self.left_column.addRow('Focal length: ', self.exif_focal_length )      #"EXIF:FocalLength"
         
+        self.left_column.addRow(QtWidgets.QLabel(""));
+        self.left_column.addRow(QtWidgets.QLabel("General Metadata"));
+        self.left_column.addRow("Location: ", self.line_location )
+        
         # Right object definition
-        self.fits_camera = QtWidgets.QLabel()
-        self.fits_exposure = QtWidgets.QLabel()
-        self.fits_date = QtWidgets.QLabel()
-        self.fits_gain = QtWidgets.QLabel()
-        self.fits_focal_length = QtWidgets.QLabel()
-        self.fits_telescope = QtWidgets.QLabel()
-        self.fits_object = QtWidgets.QLabel()
-        self.fits_temperature = QtWidgets.QLabel()
+        self.fits_camera = QtWidgets.QLineEdit()
+        self.fits_exposure = QtWidgets.QLineEdit()
+        self.fits_date = QtWidgets.QLineEdit()
+        self.fits_gain = QtWidgets.QLineEdit()
+        self.fits_focal_length = QtWidgets.QLineEdit()
+        self.fits_telescope = QtWidgets.QLineEdit()
+        self.fits_object = QtWidgets.QLineEdit()
+        self.fits_temperature = QtWidgets.QLineEdit()
         
         # Right column
         self.right_column = QtWidgets.QFormLayout()

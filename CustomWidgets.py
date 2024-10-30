@@ -40,7 +40,6 @@ class DropButton(QtWidgets.QPushButton):
                 logging.info('''Light files added: \n''' + str(vars.df_lights))
                     
             if self.objectName() == 'button_add_darks':
-                global df_darks
                 vars.df_darks = pandas.concat([vars.df_darks, files], ignore_index=True)
                 logging.info('''Dark files added: \n''' + str(vars.df_darks))
                     

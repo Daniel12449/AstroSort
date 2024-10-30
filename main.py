@@ -374,26 +374,47 @@ def readExif():
         logging.info("No light file found") 
         return
     
+    # reset line edits
+    list_exif = [window.tab4.exif_camera, window.tab4.exif_exposure, window.tab4.exif_date, window.tab4.exif_iso, window.tab4.exif_focal_length]
+    list_fits = [window.tab4.fits_camera, window.tab4.fits_exposure, window.tab4.fits_date, window.tab4.fits_gain, window.tab4.fits_focal_length,
+                 window.tab4.fits_telescope, window.tab4.fits_object, window.tab4.fits_temperature]
+    
     eth = exiftool.ExifToolHelper()
     metadata = eth.get_metadata(files)[0]
 
     if "EXIF:ExposureTime" in metadata.keys():
-         window.tab4.exif_camera.setText(str(metadata["EXIF:Model"]))
-         window.tab4.exif_exposure.setText(str(metadata["EXIF:ExposureTime"]) + "s")
-         window.tab4.exif_date.setText(str(metadata["EXIF:DateTimeOriginal"]))
-         window.tab4.exif_iso.setText(str(metadata["EXIF:ISO"]))
-         window.tab4.exif_focal_length.setText(str(metadata["EXIF:FocalLength"]))
+        for line in list_fits:
+            line.clear()
+            line.setEnabled(False)
+            
+        for line in list_exif:
+            line.clear()
+            line.setEnabled(True)
+        
+        window.tab4.exif_camera.setText(str(metadata["EXIF:Model"]))
+        window.tab4.exif_exposure.setText(str(metadata["EXIF:ExposureTime"]) + "s")
+        window.tab4.exif_date.setText(str(metadata["EXIF:DateTimeOriginal"]))
+        window.tab4.exif_iso.setText(str(metadata["EXIF:ISO"]))
+        window.tab4.exif_focal_length.setText(str(metadata["EXIF:FocalLength"]))
          
          
     if "FITS:Exposure" in metadata.keys():
+        for line in list_fits:
+            line.clear()
+            line.setEnabled(True)
+            
+        for line in list_exif:
+            line.clear()
+            line.setEnabled(False)
+        
         window.tab4.fits_camera.setText(str(metadata["FITS:Instrument"]))
-        window.tab4.fits_exposure.setText(str(metadata["FITS:Exposure"]))
+        window.tab4.fits_exposure.setText(str(round(metadata["FITS:Exposure"])) + "s")
         window.tab4.fits_date.setText(str(metadata["FITS:ObservationDate"]))
         window.tab4.fits_gain.setText(str(metadata["FITS:Gain"]))
-        window.tab4.fits_focal_length.setText(str(metadata["FITS:Focallen"]))
+        window.tab4.fits_focal_length.setText(str(round(metadata["FITS:Focallen"])))
         window.tab4.fits_telescope.setText(str(metadata["FITS:Telescope"]))
         window.tab4.fits_object.setText(str(metadata["FITS:Object"]))
-        window.tab4.fits_temperature.setText(str(metadata["FITS:Set-temp" ]))
+        window.tab4.fits_temperature.setText(str(round(metadata["FITS:Set-temp" ])))
    
    
 @Slot()      
@@ -434,7 +455,7 @@ def copyProcess():
         output = vars.df_lights['output_path'].iloc[index]
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
-        #shutil.copy(input, output)
+        shutil.copy(input, output)
         
     for index, element in vars.df_darks.iterrows():
         if vars.canceled: return None
@@ -444,7 +465,7 @@ def copyProcess():
         output = vars.df_darks['output_path'].iloc[index]
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
-        #shutil.copy(input, output)
+        shutil.copy(input, output)
         
     for index, element in vars.df_flats.iterrows():
         if vars.canceled: return None
@@ -454,7 +475,7 @@ def copyProcess():
         output = vars.df_flats['output_path'].iloc[index]
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
-        #shutil.copy(input, output)
+        shutil.copy(input, output)
         
     for index, element in vars.df_bias.iterrows():
         if vars.canceled: return None
@@ -464,7 +485,7 @@ def copyProcess():
         output = vars.df_bias['output_path'].iloc[index]
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
-        #shutil.copy(input, output)
+        shutil.copy(input, output)
     
 @Slot()      
 def startProcess(self):
