@@ -1,13 +1,8 @@
-output_files_list = {
-    'light_input': [],
-    'dark_input': [],
-    'flat_input': [],
-    'bias_input': [],
-    'light_output': [],
-    'dark_output': [],
-    'flat_output': [],
-    'bias_output': [],
-}
+import pandas
+df_lights = pandas.DataFrame()
+df_darks = pandas.DataFrame()
+df_flats = pandas.DataFrame()
+df_bias = pandas.DataFrame()
 
 output_final_dir = None
 canceled = False

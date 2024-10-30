@@ -23,36 +23,40 @@ class DropButton(QtWidgets.QPushButton):
             event.ignore()
 
     def dropEvent(self, event):
+        global df_lights, df_darks, df_flats, df_bias
+        
         self.dropSignal.emit(1)
         md = event.mimeData()
         if md.hasUrls():
+            file_list = md.urls()
+            print(file_list)
+            
+            path_list = [pathlib.Path(p.toLocalFile()) for p in file_list]
+            name_list = [p.name for p in path_list]
+            
+            files = pandas.DataFrame({
+                'name': name_list,
+                'input_path': path_list
+            })
+    
             if self.objectName() == 'button_add_lights':
-                for url in md.urls():
-                    path = pathlib.Path(url.toLocalFile())
-                    output_files_list['light_input'].append(path)
-                    logging.info("Light file added: " + str(path))
+                df_lights = pandas.concat([df_lights, files], ignore_index=True)
+                logging.info('''Light files added: \n''' + str(df_lights))
                     
             if self.objectName() == 'button_add_darks':
-                for url in md.urls():   
-                    path = pathlib.Path(url.toLocalFile())
-                    output_files_list['dark_input'].append(path)
-                    logging.info("Dark file added: " + str(path))
+                df_darks = pandas.concat([df_darks, files], ignore_index=True)
+                logging.info('''Dark files added: \n''' + str(df_darks))
                     
             if self.objectName() == 'button_add_flats':
-                for url in md.urls():    
-                    path = pathlib.Path(url.toLocalFile())
-                    output_files_list['flat_input'].append(path)
-                    logging.info("Flat file added: " + str(path))
+                df_flats = pandas.concat([df_flats, files], ignore_index=True)
+                logging.info('''Flat files added: \n''' + str(df_flats))
                     
             if self.objectName() == 'button_add_bias':
-                for url in md.urls():    
-                    path = pathlib.Path(url.toLocalFile())
-                    output_files_list['bias_input'].append(path)
-                    logging.info("Bias file added: " + str(path))
+                df_bias = pandas.concat([df_bias, files], ignore_index=True)
+                logging.info('''Bias files added: \n''' + str(df_bias))
+            
             event.acceptProposedAction()
 
-            
-            
 class searchWidget(QtWidgets.QTabWidget):
     def __init__(self, parent=None, *args, **kwargs):
         super(searchWidget, self).__init__(parent, *args, **kwargs)
