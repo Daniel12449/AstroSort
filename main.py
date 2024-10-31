@@ -1,8 +1,10 @@
+import dateutil.parser
 import sys, pathlib, logging, shutil, exiftool, pandas
 from PySide6 import QtWidgets
 from PySide6.QtCore import QDateTime, QThreadPool, Slot
 from astroquery.simbad import Simbad
 from astroquery.jplsbdb import SBDB
+from dateutil.parser import parse
 from CustomWidgets import DropButton
 from ui_classes import *
 import vars
@@ -27,12 +29,12 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.tab1 = main_tab()
         self.tab2 = files_tab()
-        self.tab3 = process_tab()
+        #self.tab3 = structure_tab()
         self.tab4 = metadata_tab()
 
         self.tabWidget.addTab(self.tab1, "Main")
         self.tabWidget.addTab(self.tab2, "Files")
-        self.tabWidget.addTab(self.tab3, "Process")
+        #self.tabWidget.addTab(self.tab3, "Folder Structure")
         self.tabWidget.addTab(self.tab4, "Image Metadata")
         
         ## Setup of Statusbar
@@ -216,10 +218,16 @@ def querySBDB():
 
 def gatherProcessParameters():
     current_category = window.tab1.search_box.currentIndex()
-    date = str(window.tab1.date.date().year()) + "-" + str(window.tab1.date.date().month()) + "-" + str(window.tab1.date.date().day())
-    location = window.tab1.line_location.text()
-    camera = window.tab1.line_camera.text()
-    focal_length = window.tab1.line_focal_length.text()
+    location = window.tab4.line_location.text()
+    
+    if window.tab4.exif_camera.isEnabled():
+        date = str(window.tab4.exif_date.date().year()) + "-" + str(window.tab4.exif_date.date().month()) + "-" + str(window.tab4.exif_date.date().day())
+        camera = str(window.tab4.exif_camera.text())
+        focal_length = str(window.tab4.exif_focal_length.text())
+    elif window.tab4.fits_camera.isEnabled():
+        date = str(window.tab4.fits_date.date().year()) + "-" + str(window.tab4.fits_date.date().month()) + "-" + str(window.tab4.fits_date.date().day())
+        camera = str(window.tab4.fits_camera.text())
+        focal_length = str(window.tab4.fits_focal_length.text())
     
     if location == "" or camera == "" or focal_length == "":
         QtWidgets.QMessageBox.about(None, "General Parameters", "Please fill location, camera and focal length fields.")
@@ -281,15 +289,8 @@ def gatherProcessParameters():
         else:
             QtWidgets.QMessageBox.about(None, "Custom Category", "Please enter a custom name and category.")
             raise ValueError
-
-    window.tab3.label_process_name.setText(str(object_name))
-    window.tab3.label_process_category.setText(str(object_category))
-    window.tab3.label_process_date.setText(str(date))
-    window.tab3.label_process_camera.setText(str(camera))
-    window.tab3.label_process_focal_length.setText(str(location))
-    window.tab3.label_process_location.setText(str(focal_length))
     
-    output_path_tmp = window.tab3.line_output_path.text()
+    output_path_tmp = window.tab1.line_output_path.text()
     
     if output_path_tmp != "":
         output_path = pathlib.Path(output_path_tmp)
@@ -298,11 +299,10 @@ def gatherProcessParameters():
         raise ValueError
     
     vars.output_final_dir = output_path / pathlib.Path(object_category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
-    window.tab3.label_base_path.setText(str(vars.output_final_dir))
-
+    
 def setBaseDirectory():
     outputPath = QtWidgets.QFileDialog.getExistingDirectory()
-    window.tab3.line_output_path.setText(outputPath)
+    window.tab1.line_output_path.setText(outputPath)
     logging.info("Output path set to: " + str(outputPath))
     
 def setCancel():
@@ -315,41 +315,72 @@ def setCancel():
         
 def preparePaths():
     try:
-        gatherProcessParameters()   
-        camera = window.tab3.label_process_camera.text()
-        focal_length = window.tab3.label_process_focal_length.text()
+        gatherProcessParameters()
+        if window.tab4.exif_camera.isEnabled():
+            exposure = str(window.tab4.exif_exposure.text())
+            iso = str(window.tab4.exif_iso.text())
+        elif window.tab4.fits_camera.isEnabled():
+            exposure = str(window.tab4.fits_exposure.text())
+            iso = str(window.tab4.fits_gain.text())  
+        
+        if window.tab4.line_exposure_dark.text() != "":
+            exposure_dark = str(window.tab4.line_exposure_dark.text())
+        if window.tab4.line_iso_dark.text() != "":
+            iso_dark = str(window.tab4.line_iso_dark.text())
+          
+        if window.tab4.line_exposure_flat.text() != "":
+            exposure_flat = str(window.tab4.line_exposure_flat.text())
+        if window.tab4.line_iso_flat.text() != "":
+            iso_flat = str(window.tab4.line_iso_flat.text())
+    
+        if window.tab4.line_exposure_bias.text() != "":
+            exposure_bias = str(window.tab4.line_exposure_bias.text())
+        if window.tab4.line_iso_bias.text() != "":
+            iso_bias = str(window.tab4.line_iso_bias.text())
+
     except:
         QtWidgets.QMessageBox.about(None, "Starting Process", "Please correct any errors and try again.")
         return    
           
     for index, row in vars.df_lights.iterrows():
-        output_dir = vars.output_final_dir / pathlib.Path('LIGHTS') 
-        filename = "L_" + camera + "_" + focal_length + "_" + row['name']
+        output_dir = vars.output_final_dir / pathlib.Path('LIGHTS')
+        if window.tab1.checkbox_filename.isChecked():
+            extension = row['input_path'].suffix
+            filename = "L_" + exposure + "_" + iso + "_img" + str(index) + extension
+        else:
+            filename = "L_" + exposure + "_" + iso + "_" + row['name']            
+
         vars.df_lights['output_path'] = output_dir / pathlib.Path(filename)
         
     for index, row in vars.df_darks.iterrows():
         output_dir = vars.output_final_dir / pathlib.Path('DARKS') 
-        filename = "D_" + camera + "_" + focal_length + "_" + row['name']
+        if window.tab1.checkbox_filename.isChecked():
+            extension = row['input_path'].suffix
+            filename = "D_" + exposure_dark + "_" + iso_dark  + "_img" + str(index) + extension
+        else:
+            filename = "D_" + exposure_dark + "_" + iso_dark + "_" + row['name']
         vars.df_darks['output_path'] = output_dir / pathlib.Path(filename)
         
     for index, row in vars.df_flats.iterrows():
-        output_dir = vars.output_final_dir / pathlib.Path('FLATS') 
-        filename = "F_" + camera + "_" + focal_length + "_" + row['name']
+        output_dir = vars.output_final_dir / pathlib.Path('FLATS')
+        if window.tab1.checkbox_filename.isChecked():
+            extension = row['input_path'].suffix
+            filename = "F_" + exposure_flat + "_" + iso_flat  + "_img" + str(index) + extension
+        else:
+            filename = "F_" + exposure_flat + "_" + iso_flat + "_" + row['name'] 
         vars.df_flats['output_path'] = output_dir / pathlib.Path(filename)
         
     for index, row in vars.df_bias.iterrows():
-        output_dir = vars.output_final_dir / pathlib.Path('BIAS') 
-        filename = "B_" + camera + "_" + focal_length + "_" + row['name']
+        output_dir = vars.output_final_dir / pathlib.Path('BIAS')
+        if window.tab1.checkbox_filename.isChecked():
+            extension = row['input_path'].suffix
+            filename = "B_" + exposure_bias + "_" + iso_bias  + "_img" + str(index) + extension
+        else:
+            filename = "B_" + exposure_bias + "_" + iso_bias + "_" + row['name'] 
         vars.df_bias['output_path'] = output_dir / pathlib.Path(filename)
         
 def resetAll():
     clearFileLists()
-    
-    window.tab1.line_camera.clear()
-    window.tab1.line_focal_length.clear()
-    window.tab1.line_location.clear()
-    window.tab3.line_output_path.clear()
-    window.tab1.date.setDateTime(QDateTime.currentDateTime())
     
     window.tab1.search_box.line_constellation.clear()
     window.tab1.search_box.line_custom_category.clear()
@@ -363,11 +394,27 @@ def resetAll():
     window.tab1.search_box.label_full_name.clear()
     window.tab1.search_box.label_short_name.clear()
     window.tab1.search_box.label_type.clear()
+    window.tab1.line_output_path.clear()
     
+    list_exif = [window.tab4.exif_camera, window.tab4.exif_exposure, window.tab4.exif_date, window.tab4.exif_iso, window.tab4.exif_focal_length,
+                 window.tab4.fits_camera, window.tab4.fits_exposure, window.tab4.fits_date, window.tab4.fits_gain, window.tab4.fits_focal_length,
+                 window.tab4.fits_telescope, window.tab4.fits_object, window.tab4.fits_temperature, window.tab4.line_exposure_dark, 
+                 window.tab4.line_exposure_flat, window.tab4.line_exposure_bias, window.tab4.line_iso_dark, window.tab4.line_iso_flat,
+                 window.tab4.line_iso_bias, window.tab4.line_location]
+    
+    for line in list_exif:
+            line.clear()
+            
     populateTreeWidget()
     
 def readExif():
-    print(vars.df_lights)
+    readExifLights()
+    readExifDarks()
+    readExifFlats()
+    readExifBias()    
+    
+def readExifLights():
+    ## Lights exif / fits
     try:
         files = vars.df_lights['input_path'].iloc[0]
     except:
@@ -393,10 +440,11 @@ def readExif():
         
         window.tab4.exif_camera.setText(str(metadata["EXIF:Model"]))
         window.tab4.exif_exposure.setText(str(metadata["EXIF:ExposureTime"]) + "s")
-        window.tab4.exif_date.setText(str(metadata["EXIF:DateTimeOriginal"]))
         window.tab4.exif_iso.setText(str(metadata["EXIF:ISO"]))
-        window.tab4.exif_focal_length.setText(str(metadata["EXIF:FocalLength"]))
-         
+        window.tab4.exif_focal_length.setText(str(metadata["EXIF:FocalLength"]) + "mm")
+     
+        date = parse(str(metadata["EXIF:DateTimeOriginal"]))
+        window.tab4.exif_date.setDate(date.date())
          
     if "FITS:Exposure" in metadata.keys():
         for line in list_fits:
@@ -408,21 +456,88 @@ def readExif():
             line.setEnabled(False)
         
         window.tab4.fits_camera.setText(str(metadata["FITS:Instrument"]))
-        window.tab4.fits_exposure.setText(str(round(metadata["FITS:Exposure"])) + "s")
-        window.tab4.fits_date.setText(str(metadata["FITS:ObservationDate"]))
+        window.tab4.fits_exposure.setText(str(metadata["FITS:Exposure"]) + "s")
         window.tab4.fits_gain.setText(str(metadata["FITS:Gain"]))
-        window.tab4.fits_focal_length.setText(str(round(metadata["FITS:Focallen"])))
+        window.tab4.fits_focal_length.setText(str(round(metadata["FITS:Focallen"])) + "mm")
         window.tab4.fits_telescope.setText(str(metadata["FITS:Telescope"]))
         window.tab4.fits_object.setText(str(metadata["FITS:Object"]))
         window.tab4.fits_temperature.setText(str(round(metadata["FITS:Set-temp" ])))
-   
-   
+        
+        date = parse(str(metadata["FITS:ObservationDate"]))
+        window.tab4.fits_date.setDate(date.date())
+        
+def readExifDarks():
+        ## Dark exif / fits
+        try:
+            files = vars.df_darks['input_path'].iloc[0]
+        except:
+            logging.info("No dark file found") 
+            return
+
+        # reset LineEdits
+        window.tab4.line_exposure_dark.clear()
+        window.tab4.line_iso_dark.clear()
+        
+        # read exif
+        eth = exiftool.ExifToolHelper()
+        metadata = eth.get_metadata(files)[0]
+        
+        if "EXIF:ExposureTime" in metadata.keys(): window.tab4.line_exposure_dark.setText(str(metadata["EXIF:ExposureTime"]) + "s")
+        if "EXIF:ISO" in metadata.keys(): window.tab4.line_iso_dark.setText(str(metadata["EXIF:ISO"]))
+        
+        if "FITS:Exposure" in metadata.keys(): window.tab4.line_exposure_dark.setText(str(metadata["FITS:Exposure"]) + "s")
+        if "FITS:Gain" in metadata.keys(): window.tab4.line_iso_dark.setText(str(metadata["FITS:Gain"]))
+        
+def readExifFlats():
+        ## Flat exif / fits
+        try:
+            files = vars.df_flats['input_path'].iloc[0]
+        except:
+            logging.info("No flat file found") 
+            return
+
+        # reset LineEdits
+        window.tab4.line_exposure_flat.clear()
+        window.tab4.line_iso_flat.clear()
+        
+        # read exif
+        eth = exiftool.ExifToolHelper()
+        metadata = eth.get_metadata(files)[0]
+        
+        if "EXIF:ExposureTime" in metadata.keys(): window.tab4.line_exposure_flat.setText(str(metadata["EXIF:ExposureTime"]) + "s")
+        if "EXIF:ISO" in metadata.keys(): window.tab4.line_iso_flat.setText(str(metadata["EXIF:ISO"]) )
+        
+        if "FITS:Exposure" in metadata.keys(): window.tab4.line_exposure_flat.setText(str(metadata["FITS:Exposure"]) + "s")
+        if "FITS:Gain" in metadata.keys(): window.tab4.line_iso_flat.setText(str(metadata["FITS:Gain"]))
+        
+def readExifBias():
+        ## Bias exif / fits
+        try:
+            files = vars.df_bias['input_path'].iloc[0]
+        except:
+            logging.info("No bias file found") 
+            return
+
+        # reset LineEdits
+        window.tab4.line_exposure_bias.clear()
+        window.tab4.line_iso_bias.clear()
+        
+        # read exif
+        eth = exiftool.ExifToolHelper()
+        metadata = eth.get_metadata(files)[0]
+        
+        if "EXIF:ExposureTime" in metadata.keys(): window.tab4.line_exposure_bias.setText(str(metadata["EXIF:ExposureTime"]) + "s")
+        if "EXIF:ISO" in metadata.keys(): window.tab4.line_iso_bias.setText(str(metadata["EXIF:ISO"]))
+        
+        if "FITS:Exposure" in metadata.keys(): window.tab4.line_exposure_bias.setText(str(metadata["FITS:Exposure"]) + "s")
+        if "FITS:Gain" in metadata.keys(): window.tab4.line_iso_bias.setText(str(metadata["FITS:Gain"]))
+            
 @Slot()      
 def copyProcess():
     #Setup of Progress bar
     total_files = len(vars.df_lights) + len(vars.df_darks) + len(vars.df_flats) + len(vars.df_bias)
-    window.tab3.progress_bar.setMinimum(0)
-    window.tab3.progress_bar.setMaximum(total_files)
+    window.tab1.progress_bar.setMinimum(0)
+    window.tab1.progress_bar.setMaximum(total_files)
     logging.info('Number of files to process: ' + str(total_files))
     current_file = 0
     
@@ -450,7 +565,7 @@ def copyProcess():
     for index, element in vars.df_lights.iterrows():
         if vars.canceled: return None
         current_file += 1
-        window.tab3.progress_bar.setValue(current_file)
+        window.tab1.progress_bar.setValue(current_file)
         input = vars.df_lights['input_path'].iloc[index]
         output = vars.df_lights['output_path'].iloc[index]
         
@@ -460,7 +575,7 @@ def copyProcess():
     for index, element in vars.df_darks.iterrows():
         if vars.canceled: return None
         current_file += 1
-        window.tab3.progress_bar.setValue(current_file)
+        window.tab1.progress_bar.setValue(current_file)
         input = vars.df_darks['input_path'].iloc[index]
         output = vars.df_darks['output_path'].iloc[index]
         
@@ -470,7 +585,7 @@ def copyProcess():
     for index, element in vars.df_flats.iterrows():
         if vars.canceled: return None
         current_file += 1
-        window.tab3.progress_bar.setValue(current_file)
+        window.tab1.progress_bar.setValue(current_file)
         input = vars.df_flats['input_path'].iloc[index]
         output = vars.df_flats['output_path'].iloc[index]
         
@@ -480,7 +595,7 @@ def copyProcess():
     for index, element in vars.df_bias.iterrows():
         if vars.canceled: return None
         current_file += 1
-        window.tab3.progress_bar.setValue(current_file)
+        window.tab1.progress_bar.setValue(current_file)
         input = vars.df_bias['input_path'].iloc[index]
         output = vars.df_bias['output_path'].iloc[index]
         
@@ -527,12 +642,12 @@ if __name__ == "__main__":
     window.tab2.checkbox_paths.stateChanged.connect(populateTreeWidget)
     
     # Process Tab
-    window.tab3.button_output_path.clicked.connect(setBaseDirectory)
-    window.tab3.button_start.clicked.connect(startProcess)
-    window.tab3.button_cancel.clicked.connect(setCancel)
+    window.tab1.button_output_path.clicked.connect(setBaseDirectory)
+    window.tab1.button_start.clicked.connect(startProcess)
+    window.tab1.button_cancel.clicked.connect(setCancel)
     
     # Metadata Tab
-    window.tab4.button_exif_single.clicked.connect(readExif)
+    window.tab4.button_scan_metadata.clicked.connect(readExif)
 
     window.show()
     app.exec()

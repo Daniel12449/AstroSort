@@ -7,6 +7,14 @@ def add_horizontal_widgets(layout, widget1, widget2):
             hbox.addWidget(widget1)
             hbox.addWidget(widget2)
             layout.addLayout(hbox)
+            
+def add_triple_widgets(layout, widget1, widget2, widget3, stretch):
+            hbox = QtWidgets.QHBoxLayout()
+            hbox.addWidget(widget1)
+            if stretch: hbox.addStretch()
+            hbox.addWidget(widget2)
+            hbox.addWidget(widget3)
+            layout.addLayout(hbox)
 
 class main_tab(QtWidgets.QWidget):
      def __init__(self, parent=None, *args, **kwargs):
@@ -52,27 +60,25 @@ class main_tab(QtWidgets.QWidget):
         self.tab1_main_layout.addWidget(self.tab1_right_layout, 1)
         self.tab1_left_layout.addStretch()
         
-        # Information Form
-        # Object definitions
-        self.formLayout = QtWidgets.QFormLayout()
-        self.line_camera = QtWidgets.QLineEdit()
-        self.line_focal_length = QtWidgets.QLineEdit()
-        self.line_location = QtWidgets.QLineEdit()
-        self.date = QtWidgets.QDateEdit(calendarPopup=True)
-        self.date.setDateTime(QDateTime.currentDateTime())
-        self.header_general = QtWidgets.QLabel('General information')
-        self.header_general.setStyleSheet(''' font-size: 18px; ''')
-        self.header_general.setAlignment(Qt.AlignCenter)
+        # Process 
+        # Object definition
+        self.checkbox_filename = QtWidgets.QCheckBox()
+        self.line_output_path = QtWidgets.QLineEdit()
+        self.button_output_path = QtWidgets.QPushButton("...")
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.button_start = QtWidgets.QPushButton("Start")
+        self.button_cancel = QtWidgets.QPushButton("Cancel")
         
-        self.formLayout.addRow(self.header_general)     
-        self.formLayout.addRow('Date : ', self.date )  
-        self.formLayout.addRow('Camera identifier: ', self.line_camera )
-        self.formLayout.addRow('Focal length: ', self.line_focal_length )      
-        self.formLayout.addRow('Location: ', self.line_location )      
-                  
+        # Layout definition
+        self.hbox_progress = QtWidgets.QHBoxLayout()
+        self.hbox_progress.addWidget(self.progress_bar)
+        self.hbox_progress.addWidget(self.button_start )
+        self.hbox_progress.addWidget(self.button_cancel)
         
-        self.tab1_left_layout.addLayout(self.formLayout)
-        self.tab1_left_layout.addStretch()
+        add_horizontal_widgets(self.tab1_left_layout, QtWidgets.QLabel("Replace filenames with imgX: "), self.checkbox_filename) 
+        self.tab1_left_layout.addWidget(QtWidgets.QLabel("Output path & start process"))
+        add_horizontal_widgets(self.tab1_left_layout, self.line_output_path, self.button_output_path)
+        self.tab1_left_layout.addLayout(self.hbox_progress)          
         self.setLayout(self.tab1_main_layout)
 
 class files_tab(QtWidgets.QWidget):
@@ -104,51 +110,13 @@ class files_tab(QtWidgets.QWidget):
         add_horizontal_widgets(self.tab2_layout, QtWidgets.QLabel("Show file paths in list"), self.checkbox_paths)
         self.setLayout(self.tab2_layout)
 
-class process_tab(QtWidgets.QWidget):
+class structure_tab(QtWidgets.QWidget):
      def __init__(self, parent=None, *args, **kwargs):
-        super(process_tab, self).__init__(parent, *args, **kwargs)
-
-        ## Setup of Process tab
-        #Object definitions
-        self.label_process_name = QtWidgets.QLabel()
-        self.label_process_category = QtWidgets.QLabel()
-        self.label_process_date = QtWidgets.QLabel()
-        self.label_process_camera = QtWidgets.QLabel()
-        self.label_process_focal_length = QtWidgets.QLabel()
-        self.label_process_location = QtWidgets.QLabel()
-        self.label_base_path = QtWidgets.QLabel()
-        self.label_process_parameters = QtWidgets.QLabel("Process Parameters")
-        self.label_process_parameters.setStyleSheet(''' font-size: 18px; ''')
-        self.line_output_path = QtWidgets.QLineEdit()
-        self.button_output_path = QtWidgets.QPushButton("...")
-        self.progress_bar = QtWidgets.QProgressBar()
-        self.button_start = QtWidgets.QPushButton("Start")
-        self.button_cancel = QtWidgets.QPushButton("Cancel")
+        super(structure_tab, self).__init__(parent, *args, **kwargs)
+        self.main_layout = QtWidgets.QVBoxLayout()
+        self.main_layout.addWidget(QtWidgets.QLabel("Still to do"))
+        self.setLayout(self.main_layout)
         
-        #Layout definitions
-        self.process_layout = QtWidgets.QVBoxLayout()
-        self.process_layout.setAlignment(Qt.AlignHCenter)
-        self.process_layout.addWidget(self.label_process_parameters )
-        
-        self.formLayout_process = QtWidgets.QFormLayout()
-        self.formLayout_process.addRow('Object Name : ', self.label_process_name)
-        self.formLayout_process.addRow('Object Category : ', self.label_process_category)
-        self.formLayout_process.addRow('Date : ', self.label_process_date)  
-        self.formLayout_process.addRow('Camera identifier: ', self.label_process_camera)
-        self.formLayout_process.addRow('Focal length: ', self.label_process_focal_length)      
-        self.formLayout_process.addRow('Location: ', self.label_process_location) 
-        self.formLayout_process.addRow(QtWidgets.QLabel("")) 
-        self.formLayout_process.addRow('Base path: ', self.label_base_path) 
-        
-        self.hbox_progress = QtWidgets.QHBoxLayout()
-        self.hbox_progress.addWidget(self.progress_bar)
-        self.hbox_progress.addWidget(self.button_start )
-        self.hbox_progress.addWidget(self.button_cancel)
-        
-        self.process_layout.addLayout(self.formLayout_process)
-        add_horizontal_widgets(self.process_layout, self.line_output_path, self.button_output_path)
-        self.process_layout.addLayout(self.hbox_progress)
-        self.setLayout(self.process_layout)
 
 class metadata_tab(QtWidgets.QWidget):
      def __init__(self, parent=None, *args, **kwargs):
@@ -163,18 +131,33 @@ class metadata_tab(QtWidgets.QWidget):
         self.separator = QtWidgets.QFrame()
         self.separator.setFrameShape(QtWidgets.QFrame.HLine)
         self.separator.setSizePolicy(QtWidgets.QSizePolicy.Minimum,QtWidgets.QSizePolicy.Expanding)
+        self.button_scan_metadata = QtWidgets.QPushButton('Scan Files') 
+        
+        # Header Layout
+        self.header_layout = QtWidgets.QHBoxLayout()
+        self.header_layout.addWidget(self.header)
+        self.header_layout.addStretch()
+        self.header_layout.addWidget(self.button_scan_metadata)
+        self.main_layout.addLayout(self.header_layout)
         
         # Left object definition
         self.exif_camera = QtWidgets.QLineEdit()
         self.exif_exposure = QtWidgets.QLineEdit()
-        self.exif_date = QtWidgets.QLineEdit()
+        self.exif_date = QtWidgets.QDateEdit(calendarPopup=True)
+        self.exif_date.setDateTime(QDateTime.currentDateTime())
         self.exif_iso = QtWidgets.QLineEdit()
         self.exif_focal_length = QtWidgets.QLineEdit()
         self.line_location = QtWidgets.QLineEdit()
+        self.label_exif = QtWidgets.QLabel('Exif image metadata')
+        self.label_exif.setStyleSheet("font-weight: bold")
+        self.label_fits = QtWidgets.QLabel('FITS image metadata')
+        self.label_fits.setStyleSheet("font-weight: bold")
+        self.label_general = QtWidgets.QLabel("General Metadata")
+        self.label_general.setStyleSheet("font-weight: bold")
                 
         # Left column
         self.left_column = QtWidgets.QFormLayout()
-        self.left_column.addRow(QtWidgets.QLabel('Exif image metadata'))
+        self.left_column.addRow(self.label_exif)
         self.left_column.addRow('Camera model: ', self.exif_camera)             #"EXIF:Model"
         self.left_column.addRow('Exposure time: ', self.exif_exposure)          #"EXIF:ExposureTime"
         self.left_column.addRow('Date taken: ', self.exif_date )                #"EXIF:DateTimeOriginal"
@@ -182,13 +165,14 @@ class metadata_tab(QtWidgets.QWidget):
         self.left_column.addRow('Focal length: ', self.exif_focal_length )      #"EXIF:FocalLength"
         
         self.left_column.addRow(QtWidgets.QLabel(""));
-        self.left_column.addRow(QtWidgets.QLabel("General Metadata"));
+        self.left_column.addRow(self.label_general);
         self.left_column.addRow("Location: ", self.line_location )
         
         # Right object definition
         self.fits_camera = QtWidgets.QLineEdit()
         self.fits_exposure = QtWidgets.QLineEdit()
-        self.fits_date = QtWidgets.QLineEdit()
+        self.fits_date = QtWidgets.QDateEdit(calendarPopup=True)
+        self.fits_date.setDateTime(QDateTime.currentDateTime())
         self.fits_gain = QtWidgets.QLineEdit()
         self.fits_focal_length = QtWidgets.QLineEdit()
         self.fits_telescope = QtWidgets.QLineEdit()
@@ -197,7 +181,7 @@ class metadata_tab(QtWidgets.QWidget):
         
         # Right column
         self.right_column = QtWidgets.QFormLayout()
-        self.right_column.addRow(QtWidgets.QLabel('FITS image metadata'))
+        self.right_column.addRow(self.label_fits)
         self.right_column.addRow('Camera model: ', self.fits_camera)            #"FITS:Instrument"
         self.right_column.addRow('Exposure time', self.fits_exposure)           #"FITS:Exposure"
         self.right_column.addRow('Date taken: ', self.fits_date)                #"FITS:ObservationDate"
@@ -206,18 +190,34 @@ class metadata_tab(QtWidgets.QWidget):
         self.right_column.addRow('Telescope: ', self.fits_telescope)            #"FITS:Telescope"
         self.right_column.addRow('Object: ', self.fits_object)                  #"FITS:Object"
         self.right_column.addRow('Sensor temperature: ', self.fits_temperature) #"FITS:Set-temp"        
-        
 
         self.metadata_box_layout.addLayout(self.left_column)
         self.metadata_box_layout.addLayout(self.right_column)
         
         # Bottom Layout
         # Object definition
-        self.button_exif_single = QtWidgets.QPushButton('Simple Scan')
+        self.bottom_layout = QtWidgets.QVBoxLayout()
+        self.header_additional = QtWidgets.QLabel("General Metadata")
+        self.header_additional.setStyleSheet("font-weight: bold")
+        self.line_exposure_dark = QtWidgets.QLineEdit()
+        self.line_exposure_flat = QtWidgets.QLineEdit()
+        self.line_exposure_bias = QtWidgets.QLineEdit()
+        self.line_iso_dark = QtWidgets.QLineEdit()
+        self.line_iso_flat = QtWidgets.QLineEdit()
+        self.line_iso_bias = QtWidgets.QLineEdit()
+        self.label_exposure = QtWidgets.QLabel("Exposure")
+        self.label_exposure.setAlignment(Qt.AlignHCenter)
+        self.label_iso = QtWidgets.QLabel("ISO / Gain")
+        self.label_iso.setAlignment(Qt.AlignHCenter)
         
-        self.main_layout.addWidget(self.header)
+        # Layout
+        self.bottom_layout.addWidget(self.header_additional)
+        add_triple_widgets(self.bottom_layout, QtWidgets.QLabel("File type"), self.label_exposure, self.label_iso, False)
+        add_triple_widgets(self.bottom_layout, QtWidgets.QLabel("Dark files"), self.line_exposure_dark, self.line_iso_dark, True)  
+        add_triple_widgets(self.bottom_layout, QtWidgets.QLabel("Flat files  "), self.line_exposure_flat, self.line_iso_flat, True)
+        add_triple_widgets(self.bottom_layout, QtWidgets.QLabel("Bias files "), self.line_exposure_bias, self.line_iso_bias, True)
+        
         self.main_layout.addLayout(self.metadata_box_layout)
-        self.main_layout.addWidget(self.separator)
-        
-        add_horizontal_widgets(self.main_layout, QtWidgets.QLabel("Get metadata from first light image: "), self.button_exif_single)
+        self.main_layout.addStretch()
+        self.main_layout.addLayout(self.bottom_layout)
         self.setLayout(self.main_layout)
