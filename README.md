@@ -14,6 +14,7 @@
 - handles light, dark, flat and bias frames
 - inserts additional information into the folder structure and file names such as:
   object, date, camera, focal length, exposure time and iso/gain value
+- most of the metadata can be pulled from the image files if exiftool is available on PATH
 - object search following categories: Deep Sky, large and small solar system objects, constellations and a custom category
 - generated folder structure can be used directly in common stacking software
 - no restriction for file type
