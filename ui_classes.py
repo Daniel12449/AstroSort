@@ -75,7 +75,12 @@ class main_tab(QtWidgets.QWidget):
         self.hbox_progress.addWidget(self.button_start )
         self.hbox_progress.addWidget(self.button_cancel)
         
-        add_horizontal_widgets(self.tab1_left_layout, QtWidgets.QLabel("Replace filenames with imgX: "), self.checkbox_filename) 
+        self.checkbox_layout = QtWidgets.QHBoxLayout()
+        self.checkbox_layout.addWidget(QtWidgets.QLabel("Replace filenames with imgX: "))
+        self.checkbox_layout.addStretch()
+        self.checkbox_layout.addWidget(self.checkbox_filename)
+        
+        self.tab1_left_layout.addLayout(self.checkbox_layout)
         self.tab1_left_layout.addWidget(QtWidgets.QLabel("Output path & start process"))
         add_horizontal_widgets(self.tab1_left_layout, self.line_output_path, self.button_output_path)
         self.tab1_left_layout.addLayout(self.hbox_progress)          
