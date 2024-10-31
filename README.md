@@ -13,8 +13,8 @@
 - copy and rename added images into a easily recognizable structure
 - handles light, dark, flat and bias frames
 - inserts additional information into the folder structure and file names such as:
-  object, date, camera and focal length
-- integrated simbad object search
+  object, date, camera, focal length, exposure time and iso/gain value
+- object search following categories: Deep Sky, large and small solar system objects, constellations and a custom category
 - generated folder structure can be used directly in common stacking software
 - no restriction for file type
 - no changes to the raw files with exception of the name
