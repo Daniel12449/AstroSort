@@ -5,9 +5,9 @@
 <br/>
 
 <p align="center">
-<img src="img/main_tab" width="800" >
-<img src="img/files_tab" width="800" >
-<img src="img/metadata_tab" width="800" title="Screenshots of AstroQuery">
+<img src="img/main_tab.png" width="800" >
+<img src="img/files_tab.png" width="800" >
+<img src="img/metadata_tab.png" width="800" title="Screenshots of AstroQuery">
 </p>
 
 - copy and rename added images into a easily recognizable structure
