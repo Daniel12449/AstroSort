@@ -184,6 +184,16 @@ class metadata_tab(QtWidgets.QWidget):
         self.fits_object = QtWidgets.QLineEdit()
         self.fits_temperature = QtWidgets.QLineEdit()
         
+        self.fits_camera.setEnabled(False)
+        self.fits_exposure.setEnabled(False)
+        self.fits_date.setEnabled(False)
+        self.fits_gain.setEnabled(False)
+        self.fits_focal_length.setEnabled(False)
+        self.fits_telescope.setEnabled(False)
+        self.fits_object.setEnabled(False)
+        self.fits_temperature.setEnabled(False)
+        
+        
         # Right column
         self.right_column = QtWidgets.QFormLayout()
         self.right_column.addRow(self.label_fits)

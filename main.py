@@ -339,7 +339,7 @@ def preparePaths():
             iso_bias = str(window.tab4.line_iso_bias.text())
 
     except:
-        QtWidgets.QMessageBox.about(None, "Starting Process", "Please correct any errors and try again.")
+        QtWidgets.QMessageBox.about(None, "Starting Process", "Please correct any errors and try again. Make sure all metadata fields are filled.")
         return    
           
     for index, row in vars.df_lights.iterrows():
@@ -350,7 +350,7 @@ def preparePaths():
         else:
             filename = "L_" + exposure + "_" + iso + "_" + row['name']            
 
-        vars.df_lights['output_path'] = output_dir / pathlib.Path(filename)
+        vars.df_lights.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
         
     for index, row in vars.df_darks.iterrows():
         output_dir = vars.output_final_dir / pathlib.Path('DARKS') 
@@ -359,7 +359,7 @@ def preparePaths():
             filename = "D_" + exposure_dark + "_" + iso_dark  + "_img" + str(index) + extension
         else:
             filename = "D_" + exposure_dark + "_" + iso_dark + "_" + row['name']
-        vars.df_darks['output_path'] = output_dir / pathlib.Path(filename)
+        vars.df_darks.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
         
     for index, row in vars.df_flats.iterrows():
         output_dir = vars.output_final_dir / pathlib.Path('FLATS')
@@ -368,7 +368,7 @@ def preparePaths():
             filename = "F_" + exposure_flat + "_" + iso_flat  + "_img" + str(index) + extension
         else:
             filename = "F_" + exposure_flat + "_" + iso_flat + "_" + row['name'] 
-        vars.df_flats['output_path'] = output_dir / pathlib.Path(filename)
+        vars.df_flats.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
         
     for index, row in vars.df_bias.iterrows():
         output_dir = vars.output_final_dir / pathlib.Path('BIAS')
@@ -377,7 +377,8 @@ def preparePaths():
             filename = "B_" + exposure_bias + "_" + iso_bias  + "_img" + str(index) + extension
         else:
             filename = "B_" + exposure_bias + "_" + iso_bias + "_" + row['name'] 
-        vars.df_bias['output_path'] = output_dir / pathlib.Path(filename)
+        vars.df_bias.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
+        
         
 def resetAll():
     clearFileLists()
@@ -563,11 +564,12 @@ def copyProcess():
         bias_subfolder.mkdir(parents=True, exist_ok=True)
     
     for index, element in vars.df_lights.iterrows():
+        print(vars.df_lights.loc[index, 'output_path'])
         if vars.canceled: return None
         current_file += 1
         window.tab1.progress_bar.setValue(current_file)
-        input = vars.df_lights['input_path'].iloc[index]
-        output = vars.df_lights['output_path'].iloc[index]
+        input = vars.df_lights.loc[index, 'input_path']
+        output = vars.df_lights.loc[index, 'output_path']
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
@@ -576,8 +578,8 @@ def copyProcess():
         if vars.canceled: return None
         current_file += 1
         window.tab1.progress_bar.setValue(current_file)
-        input = vars.df_darks['input_path'].iloc[index]
-        output = vars.df_darks['output_path'].iloc[index]
+        input = vars.df_darks.loc[index, 'input_path']
+        output = vars.df_darks.loc[index, 'output_path']
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
@@ -586,8 +588,8 @@ def copyProcess():
         if vars.canceled: return None
         current_file += 1
         window.tab1.progress_bar.setValue(current_file)
-        input = vars.df_flats['input_path'].iloc[index]
-        output = vars.df_flats['output_path'].iloc[index]
+        input = vars.df_flats.loc[index, 'input_path']
+        output = vars.df_flats.loc[index, 'output_path']
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
@@ -596,8 +598,8 @@ def copyProcess():
         if vars.canceled: return None
         current_file += 1
         window.tab1.progress_bar.setValue(current_file)
-        input = vars.df_bias['input_path'].iloc[index]
-        output = vars.df_bias['output_path'].iloc[index]
+        input = vars.df_bias.loc[index, 'input_path']
+        output = vars.df_bias.loc[index, 'output_path']
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
