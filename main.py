@@ -1,4 +1,4 @@
-import dateutil.parser
+from datetime import datetime
 import sys, pathlib, logging, shutil, exiftool, pandas
 from PySide6 import QtWidgets
 from PySide6.QtCore import QDateTime, QThreadPool, Slot
@@ -428,7 +428,7 @@ def readExifLights():
                  window.tab4.fits_telescope, window.tab4.fits_object, window.tab4.fits_temperature]
     
     eth = exiftool.ExifToolHelper()
-    metadata = eth.get_metadata(files)[0]
+    metadata = eth.get_metadata(files, params=["-d", "%Y-%m-%d %H:%M:%S"])[0]
 
     if "EXIF:ExposureTime" in metadata.keys():
         for line in list_fits:
@@ -444,7 +444,7 @@ def readExifLights():
         window.tab4.exif_iso.setText(str(metadata["EXIF:ISO"]))
         window.tab4.exif_focal_length.setText(str(metadata["EXIF:FocalLength"]) + "mm")
      
-        date = parse(str(metadata["EXIF:DateTimeOriginal"]))
+        date = datetime.strptime(str(metadata["EXIF:DateTimeOriginal"]), "%Y:%m:%d %H:%M:%S")
         window.tab4.exif_date.setDate(date.date())
          
     if "FITS:Exposure" in metadata.keys():
