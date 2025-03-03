@@ -176,10 +176,10 @@ def querySimbad():
         try:
             simbad_results = simbad.query_region(queryString)
             for i in range(len(simbad_results)):
-                name = simbad_results[i]["MAIN_ID"]
+                name = simbad_results[i]["main_id"]
                 if "NAME" in name: 
                     name = name.strip("NAME ")
-                coordinates = [simbad_results[i]["RA"], simbad_results[i]["DEC"], name]
+                coordinates = [simbad_results[i]["ra"], simbad_results[i]["dec"], name]
                 window.tab1.search_box.combo_box_query_simbad.addItem(name, coordinates)
         except: 
             QtWidgets.QMessageBox.about(None, "Simbad Search", "Simbad was unable to find an object")
@@ -192,8 +192,8 @@ def updateSimbadCoordinates():
     current_combobox_data = window.tab1.search_box.combo_box_query_simbad.currentData()
 
     if isinstance(current_combobox_data, list):
-        window.tab1.search_box.label_ra_coordinates_simbad.setText(current_combobox_data[0])
-        window.tab1.search_box.label_dec_coordinates_simbad.setText(current_combobox_data[1])
+        window.tab1.search_box.label_ra_coordinates_simbad.setText(str(current_combobox_data[0]))
+        window.tab1.search_box.label_dec_coordinates_simbad.setText(str(current_combobox_data[1]))
     
     logging.info('Simbad coordinates set to: ' + str(current_combobox_data))
     
