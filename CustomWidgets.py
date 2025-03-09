@@ -79,6 +79,8 @@ class searchWidget(QtWidgets.QTabWidget):
         self.button_simbad_query = QtWidgets.QPushButton("Search")
         self.line_simbad_query = QtWidgets.QLineEdit(placeholderText="Enter Object")
         self.combo_box_query_simbad = QtWidgets.QComboBox()
+        self.combo_box_query_simbad.setStyleSheet("combobox-popup: 0;")
+        
         # Layout definition
         vbox_astromeric_solution = QtWidgets.QVBoxLayout()
         vbox_astromeric_solution.addWidget(QtWidgets.QLabel("Search for object"))
