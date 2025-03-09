@@ -314,7 +314,7 @@ def setCancel():
         vars.canceled = False
         logging.info("Process reset.") 
         
-def preparePaths():
+def prepareLocalPaths():
     try:
         gatherProcessParameters()
         if window.tab4.exif_camera.isEnabled():
@@ -607,8 +607,9 @@ def copyProcess():
     
 @Slot()      
 def startProcess(self):
-    preparePaths()
+    
     if window.tab1.checkbox_save_locally.isChecked():
+        prepareLocalPaths()
         window.thread_manager.start(copyProcess)
         logging.info("Starting local rename and copy process.")
     else:
@@ -627,7 +628,7 @@ if __name__ == "__main__":
     window.button_add_darks.clicked.connect(lambda: openFiles('darks'))
     window.button_add_flats.clicked.connect(lambda: openFiles('flats'))
     window.button_add_bias.clicked.connect(lambda: openFiles('bias'))
-    window.button_prepare.clicked.connect(preparePaths)
+    window.button_prepare.clicked.connect(prepareLocalPaths)
     window.button_reset.clicked.connect(resetBox)
     
     # Main Tab
