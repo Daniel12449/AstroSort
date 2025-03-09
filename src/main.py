@@ -1,13 +1,14 @@
 from datetime import datetime
-import sys, pathlib, logging, shutil, exiftool, pandas
 from PySide6 import QtWidgets
-from PySide6.QtCore import QDateTime, QThreadPool, Slot, QStandardPaths
+from PySide6.QtCore import QThreadPool, Slot, QStandardPaths
 from astroquery.simbad import Simbad
 from astroquery.jplsbdb import SBDB
 from dateutil.parser import parse
 from CustomWidgets import DropButton
 from ui_classes import *
 from config import *
+
+import sys, pathlib, logging, shutil, exiftool, pandas, re
 import vars
 
 
@@ -175,13 +176,13 @@ def querySimbad():
         
         def sort_catalogue(name):
             if name.startswith("M "):
-                return (0, name)  # M should come first
+                return (0, name) 
             elif name.startswith("IC "):
-                return (1, name)  # IC should come second
+                return (1, name)
             elif name.startswith("NGC "):
-                return (2, name)  # NGC should come third
+                return (2, name)
             else:
-                return (3, name)  # Everything else comes last
+                return (3, name) 
         
         try:
             simbad_result = simbad.query_objectids(queryString)
@@ -190,7 +191,8 @@ def querySimbad():
             for index, entry in enumerate(reversed(simbad_result)):
                 name = entry["id"]
                 if "NAME" in name: name = name.strip("NAME").lstrip()
-                names.append(name)
+                name_spaces_removed = re.sub(r'\s+', ' ', name)
+                names.append(name_spaces_removed)
                 
             window.tab1.search_box.combo_box_query_simbad.addItems(sorted(names, key=sort_catalogue))
         except: 
