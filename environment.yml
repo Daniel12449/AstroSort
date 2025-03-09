@@ -6,6 +6,7 @@ dependencies:
   - python=3.12
   - pandas=2.2.3
   - astroquery=0.4.9
+  - libpython-static=3.12.9
   - pip
   - pip:
       - PyExifTool==0.5.6
