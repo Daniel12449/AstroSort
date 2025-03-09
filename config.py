@@ -9,6 +9,7 @@ def handleConfig(window, config_path):
     # [main]
     window.tab1.line_output_path.setText(cfg.get('main', 'output_path', fallback=''))
     window.tab1.checkbox_filename.setChecked(cfg.getboolean('main', 'replace_names', fallback=False))
+    window.tab1.checkbox_save_locally.setChecked(cfg.getboolean('main', 'enable_local_storage', fallback=True))
     
 def handleProfile(window, config_path, profile):
     
