@@ -62,9 +62,15 @@ class main_tab(QtWidgets.QWidget):
         # Process 
         # Object definition
         self.checkbox_filename = QtWidgets.QCheckBox()
+        self.label_options = QtWidgets.QLabel("Output options")
+        self.label_options.setStyleSheet("font-weight: bold; font-size: 20px")
         self.checkbox_save_locally = QtWidgets.QCheckBox()
         self.checkbox_save_locally.setChecked(True)
         self.line_output_path = QtWidgets.QLineEdit()
+        self.checkbox_save_s3 = QtWidgets.QCheckBox()
+        self.checkbox_save_s3.setChecked(True)
+        self.line_output_s3 = QtWidgets.QLineEdit()
+        self.button_s3_buckets = QtWidgets.QPushButton("...")
         self.button_output_path = QtWidgets.QPushButton("...")
         self.progress_bar = QtWidgets.QProgressBar()
         self.button_start = QtWidgets.QPushButton("Start")
@@ -81,9 +87,12 @@ class main_tab(QtWidgets.QWidget):
         self.checkbox_layout.addStretch()
         self.checkbox_layout.addWidget(self.checkbox_filename)
         
+        self.tab1_left_layout.addWidget(self.label_options)
         self.tab1_left_layout.addLayout(self.checkbox_layout)
-        self.tab1_left_layout.addWidget(QtWidgets.QLabel("Output options"))
+        self.tab1_left_layout.addWidget(QtWidgets.QLabel("Save files locally:"))
         add_triple_widgets(self.tab1_left_layout, self.checkbox_save_locally, self.line_output_path, self.button_output_path, False)
+        self.tab1_left_layout.addWidget(QtWidgets.QLabel("Upload to s3:"))
+        add_triple_widgets(self.tab1_left_layout, self.checkbox_save_s3, self.line_output_s3, self.button_s3_buckets, False)
         self.tab1_left_layout.addLayout(self.hbox_progress)          
         self.setLayout(self.tab1_main_layout)
 
