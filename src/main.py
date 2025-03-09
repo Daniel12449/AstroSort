@@ -110,7 +110,9 @@ def populateTreeWidget():
         state = True
     else: 
         state = False
-        
+    
+    ## TODO Add new file structure column
+      
     if 'input_path' in columns:
        window.tab2.treeWidget.setColumnHidden(columns.index('input_path'), state)
     if 'new_file_structure' in columns:
@@ -372,8 +374,6 @@ def prepareLocalPaths():
         else:
             filename = "B_" + exposure_bias + "_" + iso_bias + "_" + row['name'] 
         vars.df_bias.loc[index, 'new_file_structure'] = pathlib.Path('BIAS') / pathlib.Path(filename)
-        
-    print(vars.df_lights)
         
 def resetAll():
     clearFileLists()
