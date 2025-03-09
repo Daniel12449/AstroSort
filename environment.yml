@@ -4,9 +4,9 @@
 name: astrosort
 dependencies:
   - python=3.12
-  - pandas
-  - astroquery
+  - pandas=2.2.3
+  - astroquery=0.4.9
   - pip
   - pip:
-      - PyExifTool
-      - PySide6
+      - PyExifTool==0.5.6
+      - PySide6==6.8.2.1
