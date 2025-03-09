@@ -659,8 +659,12 @@ if __name__ == "__main__":
     # Handle config file
     # get config file location
     config_path = pathlib.Path(QStandardPaths.writableLocation(QStandardPaths.ConfigLocation)) / "astrosort.ini"
+    
     if config_path.exists():
+        logging.info("Config file found: " + str(config_path))
         handleConfig(window, config_path)
+    else:
+        logging.info("No config file found, you can add one at: " + str(config_path))
         
     window.show()
     app.exec()
