@@ -8,7 +8,7 @@ from CustomWidgets import DropButton
 from ui_classes import *
 from config import *
 
-import sys, pathlib, logging, shutil, exiftool, pandas, re
+import sys, pathlib, logging, shutil, exiftool, pandas
 import vars
 
 
@@ -190,9 +190,8 @@ def querySimbad():
             
             for index, entry in enumerate(reversed(simbad_result)):
                 name = entry["id"]
-                if "NAME" in name: name = name.strip("NAME").lstrip()
-                name_spaces_removed = re.sub(r'\s+', ' ', name)
-                names.append(name_spaces_removed)
+                if "NAME" in name: name = name.strip("NAME").replace(" ", "")
+                names.append(name)
                 
             window.tab1.search_box.combo_box_query_simbad.addItems(sorted(names, key=sort_catalogue))
         except: 
@@ -297,7 +296,7 @@ def gatherProcessParameters():
         QtWidgets.QMessageBox.about(None, "Processing", "Please enter an output path.")
         raise ValueError
     
-    vars.output_final_dir = output_path / pathlib.Path(object_category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
+    vars.output_dir_local = output_path / pathlib.Path(object_category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
     
 def setBaseDirectory():
     outputPath = QtWidgets.QFileDialog.getExistingDirectory()
@@ -342,41 +341,39 @@ def prepareLocalPaths():
         return    
           
     for index, row in vars.df_lights.iterrows():
-        output_dir = vars.output_final_dir / pathlib.Path('LIGHTS')
         if window.tab1.checkbox_filename.isChecked():
             extension = row['input_path'].suffix
             filename = "L_" + exposure + "_" + iso + "_img" + str(index) + extension
         else:
             filename = "L_" + exposure + "_" + iso + "_" + row['name']            
 
-        vars.df_lights.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
+        vars.df_lights.loc[index, 'new_file_structure'] = pathlib.Path('LIGHTS') / pathlib.Path(filename)
         
     for index, row in vars.df_darks.iterrows():
-        output_dir = vars.output_final_dir / pathlib.Path('DARKS') 
         if window.tab1.checkbox_filename.isChecked():
             extension = row['input_path'].suffix
             filename = "D_" + exposure_dark + "_" + iso_dark  + "_img" + str(index) + extension
         else:
             filename = "D_" + exposure_dark + "_" + iso_dark + "_" + row['name']
-        vars.df_darks.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
+        vars.df_darks.loc[index, 'new_file_structure'] = pathlib.Path('DARKS') / pathlib.Path(filename)
         
     for index, row in vars.df_flats.iterrows():
-        output_dir = vars.output_final_dir / pathlib.Path('FLATS')
         if window.tab1.checkbox_filename.isChecked():
             extension = row['input_path'].suffix
             filename = "F_" + exposure_flat + "_" + iso_flat  + "_img" + str(index) + extension
         else:
             filename = "F_" + exposure_flat + "_" + iso_flat + "_" + row['name'] 
-        vars.df_flats.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
+        vars.df_flats.loc[index, 'new_file_structure'] = pathlib.Path('FLATS') / pathlib.Path(filename)
         
     for index, row in vars.df_bias.iterrows():
-        output_dir = vars.output_final_dir / pathlib.Path('BIAS')
         if window.tab1.checkbox_filename.isChecked():
             extension = row['input_path'].suffix
             filename = "B_" + exposure_bias + "_" + iso_bias  + "_img" + str(index) + extension
         else:
             filename = "B_" + exposure_bias + "_" + iso_bias + "_" + row['name'] 
-        vars.df_bias.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
+        vars.df_bias.loc[index, 'new_file_structure'] = pathlib.Path('BIAS') / pathlib.Path(filename)
+        
+    print(vars.df_lights)
         
 def resetAll():
     clearFileLists()
@@ -531,77 +528,77 @@ def readExifBias():
             
 @Slot()      
 def copyProcess():
-    #Setup of Progress bar
-    total_files = len(vars.df_lights) + len(vars.df_darks) + len(vars.df_flats) + len(vars.df_bias)
-    window.tab1.progress_bar.setMinimum(0)
-    window.tab1.progress_bar.setMaximum(total_files)
-    logging.info('Number of files to process: ' + str(total_files))
-    current_file = 0
-    
     # Create file paths
     if len(vars.df_lights) != 0:
         logging.info('Created LIGHTS subdirectory')
-        light_subfolder = vars.output_final_dir / pathlib.Path('LIGHTS') 
+        light_subfolder = vars.output_dir_local / pathlib.Path('LIGHTS') 
         light_subfolder.mkdir(parents=True, exist_ok=True)
         
     if len(vars.df_darks) != 0:
         logging.info('Created DARKS subdirectory')
-        dark_subfolder = vars.output_final_dir / pathlib.Path('DARKS') 
+        dark_subfolder = vars.output_dir_local / pathlib.Path('DARKS') 
         dark_subfolder.mkdir(parents=True, exist_ok=True)
         
     if len(vars.df_flats) != 0:
         logging.info('Created FLATS subdirectory')
-        flat_subfolder = vars.output_final_dir / pathlib.Path('FLATS') 
+        flat_subfolder = vars.output_dir_local / pathlib.Path('FLATS') 
         flat_subfolder.mkdir(parents=True, exist_ok=True)
         
     if len(vars.df_bias) != 0:
         logging.info('Created BIAS subdirectory')
-        bias_subfolder = vars.output_final_dir / pathlib.Path('BIAS') 
+        bias_subfolder = vars.output_dir_local / pathlib.Path('BIAS') 
         bias_subfolder.mkdir(parents=True, exist_ok=True)
     
     for index, element in vars.df_lights.iterrows():
-        print(vars.df_lights.loc[index, 'output_path'])
         if vars.canceled: return None
-        current_file += 1
-        window.tab1.progress_bar.setValue(current_file)
+        vars.current_file += 1
+        window.tab1.progress_bar.setValue(vars.current_file)
         input = vars.df_lights.loc[index, 'input_path']
-        output = vars.df_lights.loc[index, 'output_path']
+        output = vars.output_dir_local / vars.df_lights.loc[index, 'new_file_structure']
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
         
     for index, element in vars.df_darks.iterrows():
         if vars.canceled: return None
-        current_file += 1
-        window.tab1.progress_bar.setValue(current_file)
+        vars.current_file += 1
+        window.tab1.progress_bar.setValue(vars.current_file)
         input = vars.df_darks.loc[index, 'input_path']
-        output = vars.df_darks.loc[index, 'output_path']
+        output = vars.output_dir_local / vars.df_darks.loc[index, 'new_file_structure']
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
         
     for index, element in vars.df_flats.iterrows():
         if vars.canceled: return None
-        current_file += 1
-        window.tab1.progress_bar.setValue(current_file)
+        vars.current_file += 1
+        window.tab1.progress_bar.setValue(vars.current_file)
         input = vars.df_flats.loc[index, 'input_path']
-        output = vars.df_flats.loc[index, 'output_path']
+        output = vars.output_dir_local / vars.df_flats.loc[index, 'new_file_structure']
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
         
     for index, element in vars.df_bias.iterrows():
         if vars.canceled: return None
-        current_file += 1
-        window.tab1.progress_bar.setValue(current_file)
+        vars.current_file += 1
+        window.tab1.progress_bar.setValue(vars.current_file)
         input = vars.df_bias.loc[index, 'input_path']
-        output = vars.df_bias.loc[index, 'output_path']
+        output = vars.output_dir_local / vars.df_bias.loc[index, 'new_file_structure']
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
     
 @Slot()      
 def startProcess(self):
+    
+    #Setup of Progress bar
+    total_files = len(vars.df_lights) + len(vars.df_darks) + len(vars.df_flats) + len(vars.df_bias)
+    modifier = int(window.tab1.checkbox_save_locally.isChecked() == True) # + int(window.tab1.checkbox_save_s3.isChecked() == True)
+    window.tab1.progress_bar.setMinimum(0)
+    window.tab1.progress_bar.setMaximum(total_files * modifier)
+    logging.info('Number of files to process: ' + str(total_files * modifier))
+    vars.current_file = 0
     
     if window.tab1.checkbox_save_locally.isChecked():
         prepareLocalPaths()
@@ -612,7 +609,6 @@ def startProcess(self):
     
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()
     window.resize(1200, 600)
