@@ -234,10 +234,9 @@ def gatherProcessParameters():
     
     if current_category == 0:
         object_category = "DeepSky"
-        object_name_temp = window.tab1.search_box.combo_box_query_simbad.currentData()
-        if isinstance(object_name_temp, list):
-            object_name = object_name_temp[2].replace(" ", "")
-        else:
+        object_name = window.tab1.search_box.combo_box_query_simbad.currentText()
+        print(object_name)
+        if not object_name:
             QtWidgets.QMessageBox.about(None, "Deep Sky Object", "Please select an object.")
             raise ValueError
     
@@ -378,6 +377,7 @@ def prepareLocalPaths():
             filename = "B_" + exposure_bias + "_" + iso_bias + "_" + row['name'] 
         vars.df_bias.loc[index, 'output_path'] = output_dir / pathlib.Path(filename)
         
+    print(vars.df_lights)
         
 def resetAll():
     clearFileLists()
