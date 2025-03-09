@@ -7,9 +7,13 @@ def handleConfig(window, config_path):
     cfg.read(config_path)
     
     # [main]
-    window.tab1.line_output_path.setText(cfg.get('main', 'output_path', fallback=''))
     window.tab1.checkbox_filename.setChecked(cfg.getboolean('main', 'replace_names', fallback=False))
+    
+    window.tab1.line_output_path.setText(cfg.get('main', 'local_output_path', fallback=''))
     window.tab1.checkbox_save_locally.setChecked(cfg.getboolean('main', 'enable_local_storage', fallback=True))
+    
+    window.tab1.line_output_s3.setText(cfg.get('main', 's3_output_bucket', fallback=''))
+    window.tab1.checkbox_save_s3.setChecked(cfg.getboolean('main', 'enable_s3_upload', fallback=False))
     
 def handleProfile(window, config_path, profile):
     
