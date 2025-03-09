@@ -608,8 +608,11 @@ def copyProcess():
 @Slot()      
 def startProcess(self):
     preparePaths()
-    window.thread_manager.start(copyProcess)
-    logging.info("Starting rename and copy process.")
+    if window.tab1.checkbox_save_locally.isChecked():
+        window.thread_manager.start(copyProcess)
+        logging.info("Starting local rename and copy process.")
+    else:
+        logging.info("No local storage wanted.")
     
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
