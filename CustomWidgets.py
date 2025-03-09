@@ -78,8 +78,6 @@ class searchWidget(QtWidgets.QTabWidget):
         # Object definitions
         self.button_simbad_query = QtWidgets.QPushButton("Search")
         self.line_simbad_query = QtWidgets.QLineEdit(placeholderText="Enter Object")
-        self.label_ra_coordinates_simbad = QtWidgets.QLabel()
-        self.label_dec_coordinates_simbad = QtWidgets.QLabel()
         self.combo_box_query_simbad = QtWidgets.QComboBox()
         # Layout definition
         vbox_astromeric_solution = QtWidgets.QVBoxLayout()
@@ -88,8 +86,6 @@ class searchWidget(QtWidgets.QTabWidget):
         vbox_astromeric_solution.addWidget(self.combo_box_query_simbad)
         
         hbox_coordinates = QtWidgets.QHBoxLayout()
-        add_horizontal_widgets(hbox_coordinates, QtWidgets.QLabel("RA: "),  self.label_ra_coordinates_simbad)
-        add_horizontal_widgets(hbox_coordinates, QtWidgets.QLabel("DEC: "), self.label_dec_coordinates_simbad)
         vbox_astromeric_solution.addLayout(hbox_coordinates)
         searchTab0.setLayout(vbox_astromeric_solution)
         
