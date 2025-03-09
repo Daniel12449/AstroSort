@@ -113,8 +113,8 @@ def populateTreeWidget():
         
     if 'input_path' in columns:
        window.tab2.treeWidget.setColumnHidden(columns.index('input_path'), state)
-    if 'output_path' in columns:
-        window.tab2.treeWidget.setColumnHidden(columns.index('output_path'), state)
+    if 'new_file_structure' in columns:
+        window.tab2.treeWidget.setColumnHidden(columns.index('new_file_structure'), state)
         
     for i, df in enumerate([vars.df_lights, vars.df_darks, vars.df_flats, vars.df_bias]):
         if i == 0: parent_item = QtWidgets.QTreeWidgetItem(["Light files"])
@@ -135,7 +135,7 @@ def populateTreeWidget():
 
     window.tab2.treeWidget.expandAll()
 
-        # Send counts to mainpage
+    # Send counts to mainpage
     window.tab1.label_count_lights.setText(str(len(vars.df_lights)))
     window.tab1.label_count_darks.setText(str(len(vars.df_darks)))
     window.tab1.label_count_flats.setText(str(len(vars.df_flats)))
