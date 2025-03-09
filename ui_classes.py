@@ -32,7 +32,7 @@ class main_tab(QtWidgets.QWidget):
         self.layout_right_box = QtWidgets.QVBoxLayout()
         self.label_logo = QtWidgets.QLabel("AstroSort", alignment=Qt.AlignmentFlag.AlignHCenter )
         self.label_logo.setStyleSheet("font-weight: bold; font-size: 45px")
-        self.label_version = QtWidgets.QLabel("v1.0", alignment=Qt.AlignmentFlag.AlignHCenter )
+        self.label_version = QtWidgets.QLabel("v1.1", alignment=Qt.AlignmentFlag.AlignHCenter )
         self.label_count_lights = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
         self.label_count_darks = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
         self.label_count_flats = QtWidgets.QLabel("0", alignment=Qt.AlignmentFlag.AlignRight)
