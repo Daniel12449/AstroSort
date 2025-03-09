@@ -1,0 +1,12 @@
+# conda env create -f environment.yml
+# conda env update --file environment.yml --prune
+
+name: astrosort
+dependencies:
+  - python=3.12
+  - pandas
+  - astroquery
+  - pip
+  - pip:
+      - PyExifTool
+      - PySide6
