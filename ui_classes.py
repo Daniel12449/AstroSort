@@ -55,7 +55,6 @@ class main_tab(QtWidgets.QWidget):
         # Search box
         self.search_box = searchWidget()
         self.tab1_left_layout.addWidget(self.search_box)
-        
         self.tab1_main_layout.addLayout(self.tab1_left_layout, 3)
         self.tab1_main_layout.addWidget(self.tab1_right_layout, 1)
         self.tab1_left_layout.addStretch()
@@ -63,6 +62,8 @@ class main_tab(QtWidgets.QWidget):
         # Process 
         # Object definition
         self.checkbox_filename = QtWidgets.QCheckBox()
+        self.checkbox_save_locally = QtWidgets.QCheckBox()
+        self.checkbox_save_locally.setChecked(True)
         self.line_output_path = QtWidgets.QLineEdit()
         self.button_output_path = QtWidgets.QPushButton("...")
         self.progress_bar = QtWidgets.QProgressBar()
@@ -81,8 +82,8 @@ class main_tab(QtWidgets.QWidget):
         self.checkbox_layout.addWidget(self.checkbox_filename)
         
         self.tab1_left_layout.addLayout(self.checkbox_layout)
-        self.tab1_left_layout.addWidget(QtWidgets.QLabel("Output path & start process"))
-        add_horizontal_widgets(self.tab1_left_layout, self.line_output_path, self.button_output_path)
+        self.tab1_left_layout.addWidget(QtWidgets.QLabel("Output options"))
+        add_triple_widgets(self.tab1_left_layout, self.checkbox_save_locally, self.line_output_path, self.button_output_path, False)
         self.tab1_left_layout.addLayout(self.hbox_progress)          
         self.setLayout(self.tab1_main_layout)
 
