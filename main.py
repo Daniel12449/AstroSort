@@ -1,12 +1,13 @@
 from datetime import datetime
 import sys, pathlib, logging, shutil, exiftool, pandas
 from PySide6 import QtWidgets
-from PySide6.QtCore import QDateTime, QThreadPool, Slot
+from PySide6.QtCore import QDateTime, QThreadPool, Slot, QStandardPaths
 from astroquery.simbad import Simbad
 from astroquery.jplsbdb import SBDB
 from dateutil.parser import parse
 from CustomWidgets import DropButton
 from ui_classes import *
+from config import *
 import vars
 
 
@@ -650,6 +651,16 @@ if __name__ == "__main__":
     
     # Metadata Tab
     window.tab4.button_scan_metadata.clicked.connect(readExif)
+    window.tab4.button_profile1.clicked.connect(lambda: handleProfile(window, config_path, 'metadata_profile_1'))
+    window.tab4.button_profile2.clicked.connect(lambda: handleProfile(window, config_path, 'metadata_profile_2'))
+    window.tab4.button_profile3.clicked.connect(lambda: handleProfile(window, config_path, 'metadata_profile_3'))
 
+
+    # Handle config file
+    # get config file location
+    config_path = pathlib.Path(QStandardPaths.writableLocation(QStandardPaths.ConfigLocation)) / "astrosort.ini"
+    if config_path.exists():
+        handleConfig(window, config_path)
+        
     window.show()
     app.exec()

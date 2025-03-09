@@ -136,12 +136,18 @@ class metadata_tab(QtWidgets.QWidget):
         self.separator = QtWidgets.QFrame()
         self.separator.setFrameShape(QtWidgets.QFrame.HLine)
         self.separator.setSizePolicy(QtWidgets.QSizePolicy.Minimum,QtWidgets.QSizePolicy.Expanding)
+        self.button_profile1 = QtWidgets.QPushButton('1') 
+        self.button_profile2 = QtWidgets.QPushButton('2') 
+        self.button_profile3 = QtWidgets.QPushButton('3') 
         self.button_scan_metadata = QtWidgets.QPushButton('Scan Files') 
         
         # Header Layout
         self.header_layout = QtWidgets.QHBoxLayout()
         self.header_layout.addWidget(self.header)
         self.header_layout.addStretch()
+        self.header_layout.addWidget(self.button_profile1)
+        self.header_layout.addWidget(self.button_profile2)
+        self.header_layout.addWidget(self.button_profile3)
         self.header_layout.addWidget(self.button_scan_metadata)
         self.main_layout.addLayout(self.header_layout)
         
