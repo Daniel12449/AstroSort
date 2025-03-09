@@ -169,35 +169,33 @@ def clearFileLists():
 def querySimbad():
     window.tab1.search_box.combo_box_query_simbad.clear()
     queryString = window.tab1.search_box.line_simbad_query.text()
-    
     simbad = Simbad()
-    simbad.ROW_LIMIT = 10
     
     if queryString != "":
+        
+        def sort_catalogue(name):
+            if name.startswith("M "):
+                return (0, name)  # M should come first
+            elif name.startswith("IC "):
+                return (1, name)  # IC should come second
+            elif name.startswith("NGC "):
+                return (2, name)  # NGC should come third
+            else:
+                return (3, name)  # Everything else comes last
+        
         try:
-            simbad_results = simbad.query_region(queryString)
-            for i in range(len(simbad_results)):
-                name = simbad_results[i]["main_id"]
-                if "NAME" in name: 
-                    name = name.strip("NAME ")
-                coordinates = [simbad_results[i]["ra"], simbad_results[i]["dec"], name]
-                window.tab1.search_box.combo_box_query_simbad.addItem(name, coordinates)
+            simbad_result = simbad.query_objectids(queryString)
+            names = []
+            
+            for index, entry in enumerate(reversed(simbad_result)):
+                name = entry["id"]
+                if "NAME" in name: name = name.strip("NAME").lstrip()
+                names.append(name)
+                
+            window.tab1.search_box.combo_box_query_simbad.addItems(sorted(names, key=sort_catalogue))
         except: 
             QtWidgets.QMessageBox.about(None, "Simbad Search", "Simbad was unable to find an object")
-            logging.warning("Simbad was unable to find a matching object.")
-
-def updateSimbadCoordinates():
-    window.tab1.search_box.label_ra_coordinates_simbad.clear()
-    window.tab1.search_box.label_dec_coordinates_simbad.clear()
-    
-    current_combobox_data = window.tab1.search_box.combo_box_query_simbad.currentData()
-
-    if isinstance(current_combobox_data, list):
-        window.tab1.search_box.label_ra_coordinates_simbad.setText(str(current_combobox_data[0]))
-        window.tab1.search_box.label_dec_coordinates_simbad.setText(str(current_combobox_data[1]))
-    
-    logging.info('Simbad coordinates set to: ' + str(current_combobox_data))
-    
+            logging.warning("Simbad was unable to find a matching object.") 
 
 def querySBDB():
     queryString = window.tab1.search_box.line_sbdb_query.text()
@@ -391,8 +389,6 @@ def resetAll():
     window.tab1.search_box.line_sbdb_query.clear()
     window.tab1.search_box.line_simbad_query.clear()
     window.tab1.search_box.combo_box_query_simbad.clear()
-    window.tab1.search_box.label_dec_coordinates_simbad.clear()
-    window.tab1.search_box.label_ra_coordinates_simbad.clear()
     window.tab1.search_box.label_full_name.clear()
     window.tab1.search_box.label_short_name.clear()
     window.tab1.search_box.label_type.clear()
@@ -634,7 +630,6 @@ if __name__ == "__main__":
     # Main Tab
     window.tab1.search_box.button_simbad_query.clicked.connect(querySimbad)
     window.tab1.search_box.line_simbad_query.returnPressed.connect(querySimbad)
-    window.tab1.search_box.combo_box_query_simbad.currentIndexChanged.connect(updateSimbadCoordinates)
     window.tab1.search_box.button_sbdb_query.clicked.connect(querySBDB)
     window.tab1.search_box.line_sbdb_query.returnPressed.connect(querySBDB)
     
