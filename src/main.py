@@ -604,6 +604,39 @@ def startS3Upload():
         
         #print('Current file: ' + str(input) + "---->" + str(output))
         s3_resource.uploadFile(input_path=input, new_name=output)
+        
+    for index, element in vars.df_darks.iterrows():
+        if vars.canceled: return None
+        vars.current_file += 1
+        #window.tab1.progress_bar.setValue(vars.current_file)
+        
+        input = vars.df_darks.loc[index, 'input_path']
+        output = vars.output_dir_s3 / vars.df_darks.loc[index, 'new_file_structure']
+        
+        #print('Current file: ' + str(input) + "---->" + str(output))
+        s3_resource.uploadFile(input_path=input, new_name=output)
+        
+    for index, element in vars.df_flats.iterrows():
+        if vars.canceled: return None
+        vars.current_file += 1
+        #window.tab1.progress_bar.setValue(vars.current_file)
+        
+        input = vars.df_flats.loc[index, 'input_path']
+        output = vars.output_dir_s3 / vars.df_flats.loc[index, 'new_file_structure']
+        
+        #print('Current file: ' + str(input) + "---->" + str(output))
+        s3_resource.uploadFile(input_path=input, new_name=output)
+        
+    for index, element in vars.df_bias.iterrows():
+        if vars.canceled: return None
+        vars.current_file += 1
+        #window.tab1.progress_bar.setValue(vars.current_file)
+        
+        input = vars.df_bias.loc[index, 'input_path']
+        output = vars.output_dir_s3 / vars.df_bias.loc[index, 'new_file_structure']
+        
+        #print('Current file: ' + str(input) + "---->" + str(output))
+        s3_resource.uploadFile(input_path=input, new_name=output)
 @Slot()      
 def startProcess(self):
     
