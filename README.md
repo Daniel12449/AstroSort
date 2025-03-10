@@ -10,15 +10,20 @@
 <img src="img/metadata_tab.png" width="800" title="Screenshots of AstroQuery">
 </p>
 
-- copy and rename added images into a easily recognizable structure
-- handles light, dark, flat and bias frames
-- inserts additional information into the folder structure and file names such as:
+### Features
+- Copy and rename added images into a easily recognizable structure
+- Handles light, dark, flat and bias frames
+- Inserts additional information into the folder structure and file names such as:
   object, date, camera, focal length, exposure time and iso/gain value
-- most of the metadata can be pulled from the image files if exiftool is available on PATH
-- object search following categories: Deep Sky, large and small solar system objects, constellations and a custom category
-- generated folder structure can be used directly in common stacking software
-- no restriction for file type
-- no changes to the raw files with exception of the name
+- Files can be stored locally or uploaded to s3
+- Most of the metadata can be pulled from the image files if exiftool is available on PATH
+- Object search following categories: Deep Sky, large and small solar system objects, constellations and a custom category
+- Search prioritizes Messier, IC, and NGC catalogues for naming
+- Generated folder structure can be used directly in common stacking software
+- Most default parameters and settings can be loaded from a settings file
+- Custom profiles for image metadata available (3 Slots)
+- No restriction for file type
+- No changes to the raw files with exception of the name
 
 ### Example of new file structure:
 ```
