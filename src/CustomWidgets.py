@@ -1,5 +1,6 @@
 from PySide6 import QtWidgets
 from PySide6.QtCore import Signal
+from s3client import s3client
 import vars
 import pathlib, logging, pandas
             
@@ -152,4 +153,36 @@ class searchWidget(QtWidgets.QTabWidget):
         add_horizontal_widgets(vbox_custom, QtWidgets.QLabel("Enter custom category: "), self.line_custom_category)
         add_horizontal_widgets(vbox_custom, QtWidgets.QLabel("Enter custom object name: "), self.line_custom_name)
         searchTab4.setLayout(vbox_custom)
+        
+class s3BucketPopup(QtWidgets.QDialog):
+    def __init__(self, parent=None, *args, **kwargs):
+        super(s3BucketPopup, self).__init__(parent, *args, **kwargs)
+        
+        self.setWindowTitle("S3 Bucket selection")
+        self.resize(600, 300)
+        
+        QBtn = (
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.setBucket)
+        self.buttonBox.rejected.connect(self.reject)
+        
+        self.list_s3_buckets = QtWidgets.QListWidget()
+        self.list_s3_buckets.addItems(vars.s3_bucket_list)
+        
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(QtWidgets.QLabel("Choose default bucket"))
+        layout.addWidget(self.list_s3_buckets)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
+        
+    def setBucket(self):
+        selected_bucket = self.list_s3_buckets.currentItem().text()
+        if selected_bucket:
+            vars.output_dir_s3 = selected_bucket
+            logging.info("Set s3 output bucket to: " + selected_bucket)
+        self.accept()
+        
         
