@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 import logging
+import vars
 
 def handleConfig(window, config_path):
     
@@ -8,12 +9,17 @@ def handleConfig(window, config_path):
     
     # [main]
     window.tab1.checkbox_filename.setChecked(cfg.getboolean('main', 'replace_names', fallback=False))
-    
+
     window.tab1.line_output_path.setText(cfg.get('main', 'local_output_path', fallback=''))
     window.tab1.checkbox_save_locally.setChecked(cfg.getboolean('main', 'enable_local_storage', fallback=True))
     
-    window.tab1.line_output_s3.setText(cfg.get('main', 's3_output_bucket', fallback=''))
-    window.tab1.checkbox_save_s3.setChecked(cfg.getboolean('main', 'enable_s3_upload', fallback=False))
+    # [S3]
+    if cfg.has_section('S3'):
+        window.tab1.line_output_s3.setText(cfg.get('S3', 's3_output_bucket', fallback=''))
+        window.tab1.checkbox_save_s3.setChecked(cfg.getboolean('S3', 'enable_s3_upload', fallback=False))
+        vars.use_s3 = True
+        
+    
     
 def handleProfile(window, config_path, profile):
     
@@ -48,3 +54,5 @@ def handleProfile(window, config_path, profile):
             if 'default_iso' in settings: window.tab4.fits_gain.setText(settings['default_iso'])
             if 'default_focal_length' in settings: window.tab4.fits_focal_length.setText(settings['default_focal_length'])
             
+
+
