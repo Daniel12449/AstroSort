@@ -82,7 +82,7 @@ class main_tab(QtWidgets.QWidget):
         def s3PopUp():
             popup = s3BucketPopup(self)
             popup.exec()
-            self.line_output_s3.setText(vars.output_dir_s3)
+            self.line_output_s3.setText(vars.s3_bucket)
 
         self.button_s3_buckets.clicked.connect(s3PopUp)
         

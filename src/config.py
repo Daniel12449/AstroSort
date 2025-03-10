@@ -16,6 +16,7 @@ def handleConfig(window, config_path):
     # [S3]
     if cfg.has_section('S3'):
         window.tab1.line_output_s3.setText(cfg.get('S3', 's3_output_bucket', fallback=''))
+        vars.s3_bucket = window.tab1.line_output_s3.text()
         window.tab1.checkbox_save_s3.setChecked(cfg.getboolean('S3', 'enable_s3_upload', fallback=False))
         vars.use_s3 = True
         
