@@ -8,3 +8,6 @@ output_dir_local = None
 output_dir_s3 = None
 canceled = False
 current_file = 0
+
+use_s3 = False
+s3_bucket_list = []

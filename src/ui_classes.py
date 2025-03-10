@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QDateTime
-from CustomWidgets import searchWidget
+from CustomWidgets import searchWidget, s3BucketPopup
+import vars
 
 def add_horizontal_widgets(layout, widget1, widget2):
             hbox = QtWidgets.QHBoxLayout()
@@ -68,13 +69,22 @@ class main_tab(QtWidgets.QWidget):
         self.checkbox_save_locally.setChecked(True)
         self.line_output_path = QtWidgets.QLineEdit()
         self.checkbox_save_s3 = QtWidgets.QCheckBox()
-        self.checkbox_save_s3.setChecked(True)
+        self.checkbox_save_s3.setChecked(False)
         self.line_output_s3 = QtWidgets.QLineEdit()
         self.button_s3_buckets = QtWidgets.QPushButton("...")
         self.button_output_path = QtWidgets.QPushButton("...")
         self.progress_bar = QtWidgets.QProgressBar()
         self.button_start = QtWidgets.QPushButton("Start")
         self.button_cancel = QtWidgets.QPushButton("Cancel")
+        
+        # function definition for S3 Search popup
+        
+        def s3PopUp():
+            popup = s3BucketPopup(self)
+            popup.exec()
+            self.line_output_s3.setText(vars.output_dir_s3)
+
+        self.button_s3_buckets.clicked.connect(s3PopUp)
         
         # Layout definition
         self.hbox_progress = QtWidgets.QHBoxLayout()

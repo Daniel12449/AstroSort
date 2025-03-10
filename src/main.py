@@ -7,6 +7,7 @@ from dateutil.parser import parse
 from CustomWidgets import DropButton
 from ui_classes import *
 from config import *
+from s3client import s3client
 
 import sys, pathlib, logging, shutil, exiftool, pandas
 import vars
@@ -655,6 +656,10 @@ if __name__ == "__main__":
     if config_path.exists():
         logging.info("Config file found: " + str(config_path))
         handleConfig(window, config_path)
+        if vars.use_s3:
+            logging.info("S3 config enabled")
+            s3_resource = s3client(config_path)
+            s3_resource.getBuckets()
     else:
         logging.info("No config file found, you can add one at: " + str(config_path))
         
