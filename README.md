@@ -44,3 +44,5 @@ ObjectCategory/
 ### Built using:
 - [PySide6](https://wiki.qt.io/Main)
 - [Astroquery](https://github.com/astropy/astroquery)
+- [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
+- [PyExifTool](https://github.com/sylikc/pyexiftool)
