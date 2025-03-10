@@ -527,6 +527,9 @@ def readExifBias():
         
         if "FITS:Exposure" in metadata.keys(): window.tab4.line_exposure_bias.setText(str(metadata["FITS:Exposure"]) + "s")
         if "FITS:Gain" in metadata.keys(): window.tab4.line_iso_bias.setText(str(metadata["FITS:Gain"]))
+
+def updateProcessBar():
+    window.tab1.progress_bar.setValue(vars.current_file)
             
 @Slot()      
 def localcopyProcess():
@@ -554,7 +557,7 @@ def localcopyProcess():
     for index, element in vars.df_lights.iterrows():
         if vars.canceled: return None
         vars.current_file += 1
-        window.tab1.progress_bar.setValue(vars.current_file)
+        updateProcessBar()
         input = vars.df_lights.loc[index, 'input_path']
         output = vars.output_dir_local / vars.df_lights.loc[index, 'new_file_structure']
         
@@ -564,7 +567,7 @@ def localcopyProcess():
     for index, element in vars.df_darks.iterrows():
         if vars.canceled: return None
         vars.current_file += 1
-        window.tab1.progress_bar.setValue(vars.current_file)
+        updateProcessBar()
         input = vars.df_darks.loc[index, 'input_path']
         output = vars.output_dir_local / vars.df_darks.loc[index, 'new_file_structure']
         
@@ -574,7 +577,7 @@ def localcopyProcess():
     for index, element in vars.df_flats.iterrows():
         if vars.canceled: return None
         vars.current_file += 1
-        window.tab1.progress_bar.setValue(vars.current_file)
+        updateProcessBar()
         input = vars.df_flats.loc[index, 'input_path']
         output = vars.output_dir_local / vars.df_flats.loc[index, 'new_file_structure']
         
@@ -584,7 +587,7 @@ def localcopyProcess():
     for index, element in vars.df_bias.iterrows():
         if vars.canceled: return None
         vars.current_file += 1
-        window.tab1.progress_bar.setValue(vars.current_file)
+        updateProcessBar()
         input = vars.df_bias.loc[index, 'input_path']
         output = vars.output_dir_local / vars.df_bias.loc[index, 'new_file_structure']
         
@@ -597,45 +600,41 @@ def startS3Upload():
     for index, element in vars.df_lights.iterrows():
         if vars.canceled: return None
         vars.current_file += 1
-        #window.tab1.progress_bar.setValue(vars.current_file)
+        updateProcessBar()
         
         input = vars.df_lights.loc[index, 'input_path']
         output = vars.output_dir_s3 / vars.df_lights.loc[index, 'new_file_structure']
-        
-        #print('Current file: ' + str(input) + "---->" + str(output))
+
         s3_resource.uploadFile(input_path=input, new_name=output)
         
     for index, element in vars.df_darks.iterrows():
         if vars.canceled: return None
         vars.current_file += 1
-        #window.tab1.progress_bar.setValue(vars.current_file)
+        updateProcessBar()
         
         input = vars.df_darks.loc[index, 'input_path']
         output = vars.output_dir_s3 / vars.df_darks.loc[index, 'new_file_structure']
-        
-        #print('Current file: ' + str(input) + "---->" + str(output))
+
         s3_resource.uploadFile(input_path=input, new_name=output)
         
     for index, element in vars.df_flats.iterrows():
         if vars.canceled: return None
         vars.current_file += 1
-        #window.tab1.progress_bar.setValue(vars.current_file)
+        updateProcessBar()
         
         input = vars.df_flats.loc[index, 'input_path']
         output = vars.output_dir_s3 / vars.df_flats.loc[index, 'new_file_structure']
         
-        #print('Current file: ' + str(input) + "---->" + str(output))
         s3_resource.uploadFile(input_path=input, new_name=output)
         
     for index, element in vars.df_bias.iterrows():
         if vars.canceled: return None
         vars.current_file += 1
-        #window.tab1.progress_bar.setValue(vars.current_file)
+        updateProcessBar()
         
         input = vars.df_bias.loc[index, 'input_path']
         output = vars.output_dir_s3 / vars.df_bias.loc[index, 'new_file_structure']
-        
-        #print('Current file: ' + str(input) + "---->" + str(output))
+
         s3_resource.uploadFile(input_path=input, new_name=output)
 @Slot()      
 def startProcess(self):
