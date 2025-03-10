@@ -181,7 +181,7 @@ class s3BucketPopup(QtWidgets.QDialog):
     def setBucket(self):
         selected_bucket = self.list_s3_buckets.currentItem().text()
         if selected_bucket:
-            vars.output_dir_s3 = selected_bucket
+            vars.s3_bucket = selected_bucket
             logging.info("Set s3 output bucket to: " + selected_bucket)
         self.accept()
         
