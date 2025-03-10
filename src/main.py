@@ -110,9 +110,7 @@ def populateTreeWidget():
         state = True
     else: 
         state = False
-    
-    ## TODO Add new file structure column
-      
+          
     if 'input_path' in columns:
        window.tab2.treeWidget.setColumnHidden(columns.index('input_path'), state)
     if 'new_file_structure' in columns:
