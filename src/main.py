@@ -189,7 +189,7 @@ def querySimbad():
             simbad_result = simbad.query_objectids(queryString)
             names = []
             
-            for index, entry in enumerate(reversed(simbad_result)):
+            for index, entry in enumerate(simbad_result):
                 name = entry["id"]
                 if "NAME" in name: name = name.strip("NAME").replace(" ", "")
                 names.append(name)
@@ -236,7 +236,7 @@ def gatherProcessParameters():
     
     if current_category == 0:
         object_category = "DeepSky"
-        object_name = window.tab1.search_box.combo_box_query_simbad.currentText()
+        object_name = window.tab1.search_box.combo_box_query_simbad.currentText().replace(" ", "")
         if not object_name:
             QtWidgets.QMessageBox.about(None, "Deep Sky Object", "Please select an object.")
             raise ValueError
@@ -298,6 +298,7 @@ def gatherProcessParameters():
         raise ValueError
     
     vars.output_dir_local = output_path / pathlib.Path(object_category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
+    vars.output_dir_s3 =  pathlib.Path(object_category) / pathlib.Path(object_name) / pathlib.Path(date + "_" + location) / pathlib.Path(camera + "_" + focal_length)
     
 def setBaseDirectory():
     outputPath = QtWidgets.QFileDialog.getExistingDirectory()
@@ -339,7 +340,7 @@ def prepareLocalPaths():
 
     except:
         QtWidgets.QMessageBox.about(None, "Starting Process", "Please correct any errors and try again. Make sure all metadata fields are filled.")
-        return    
+        return False
           
     for index, row in vars.df_lights.iterrows():
         if window.tab1.checkbox_filename.isChecked():
@@ -373,6 +374,8 @@ def prepareLocalPaths():
         else:
             filename = "B_" + exposure_bias + "_" + iso_bias + "_" + row['name'] 
         vars.df_bias.loc[index, 'new_file_structure'] = pathlib.Path('BIAS') / pathlib.Path(filename)
+        
+    return True
         
 def resetAll():
     clearFileLists()
@@ -526,7 +529,7 @@ def readExifBias():
         if "FITS:Gain" in metadata.keys(): window.tab4.line_iso_bias.setText(str(metadata["FITS:Gain"]))
             
 @Slot()      
-def copyProcess():
+def localcopyProcess():
     # Create file paths
     if len(vars.df_lights) != 0:
         logging.info('Created LIGHTS subdirectory')
@@ -587,24 +590,45 @@ def copyProcess():
         
         logging.info('COPY: ' + str(input) + '  -->  ' + str(output))
         shutil.copy(input, output)
+        
+@Slot()
+def startS3Upload():    
     
+    for index, element in vars.df_lights.iterrows():
+        if vars.canceled: return None
+        vars.current_file += 1
+        #window.tab1.progress_bar.setValue(vars.current_file)
+        
+        input = vars.df_lights.loc[index, 'input_path']
+        output = vars.output_dir_s3 / vars.df_lights.loc[index, 'new_file_structure']
+        
+        #print('Current file: ' + str(input) + "---->" + str(output))
+        s3_resource.uploadFile(input_path=input, new_name=output)
 @Slot()      
 def startProcess(self):
     
+    if not prepareLocalPaths():
+        return
+    
     #Setup of Progress bar
     total_files = len(vars.df_lights) + len(vars.df_darks) + len(vars.df_flats) + len(vars.df_bias)
-    modifier = int(window.tab1.checkbox_save_locally.isChecked() == True) # + int(window.tab1.checkbox_save_s3.isChecked() == True)
+    modifier = int(window.tab1.checkbox_save_locally.isChecked() == True) + int(window.tab1.checkbox_save_s3.isChecked() == True)
     window.tab1.progress_bar.setMinimum(0)
     window.tab1.progress_bar.setMaximum(total_files * modifier)
     logging.info('Number of files to process: ' + str(total_files * modifier))
     vars.current_file = 0
     
     if window.tab1.checkbox_save_locally.isChecked():
-        prepareLocalPaths()
-        window.thread_manager.start(copyProcess)
+        window.thread_manager.start(localcopyProcess)
         logging.info("Starting local rename and copy process.")
     else:
-        logging.info("No local storage wanted.")
+        logging.info("No local storage selected.")
+        
+    if window.tab1.checkbox_save_s3.isChecked():
+        window.thread_manager.start(startS3Upload)
+        logging.info("Starting rename and s3 upload process.")
+    else:
+        logging.info("No s3 upload selected.")
     
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
