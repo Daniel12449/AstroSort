@@ -69,7 +69,7 @@ class s3client:
         try:
             with open(input_path, 'rb') as data:
                 self.resource.Bucket(vars.s3_bucket).put_object(Key=str(new_name), Body=data)
-                logging.info('Upload: ' + str(input_path) + '  -->  s3://'+ vars.s3_bucket + str(new_name))
+                logging.info('Upload: ' + str(input_path) + '  -->  s3://'+ vars.s3_bucket + '/' + str(new_name))
         except Exception as ex:
             logging.error('Upload failed: ' + str(ex))
        
